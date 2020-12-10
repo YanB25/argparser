@@ -49,7 +49,7 @@ public:
                       << ": flag already registered" << std::endl;
             return false;
         }
-        if (!unique_short_flag(full_name))
+        if (!unique_short_flag(short_name))
         {
             std::cerr << "Failed to register flag " << short_name << "("
                       << full_name << ")"

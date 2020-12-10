@@ -5,7 +5,7 @@
 
 TEST(ArgparserFlag, Default)
 {
-    int i= 0;
+    int i = 0;
     unsigned int u = 0;
     int64_t ii = 0;
     uint64_t uu = 0;
@@ -28,6 +28,70 @@ TEST(ArgparserFlag, Default)
     EXPECT_EQ(f, false);
 }
 
+TEST(ArgparserFlag, FailedIfRequiredNotProvided)
+{
+    int required = 0;
+    int optional = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(
+        parser->flag(&required, "--required", "-r", "A required number"));
+    EXPECT_TRUE(parser->flag(
+        &optional, "--optional", "-o", "An optional number", "181"));
+    const char *arg[] = {"./argtest", "--optional", "284"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+
+TEST(ArgparserFlag, RequiredCanOverride)
+{
+    int required = 1;
+    int optional = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(
+        parser->flag(&required, "--required", "-r", "A required number"));
+    EXPECT_TRUE(parser->flag(
+        &optional, "--optional", "-o", "An optional number", "181"));
+    const char *arg[] = {"./argtest", "--optional", "284", "--required", "2"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(required, 2);
+}
+
+TEST(ArgparserFlag, NotAllowDupFullFlag)
+{
+    int required = 1;
+    int reason = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(&required, "--required", "-r", ""));
+    EXPECT_FALSE(parser->flag(&reason, "--required", "-o", "A conflict flag"));
+    const char *arg[] = {"./argtest", "--required", "2"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(required, 2);
+}
+TEST(ArgparserFlag, NotAllowDupShortFlag)
+{
+    int required = 1;
+    int reason = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(&required, "--required", "-r", ""));
+    EXPECT_FALSE(
+        parser->flag(&reason, "--reason", "-r", "A conflict short flag"));
+    const char *arg[] = {"./argtest", "-r", "2"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(required, 2);
+    EXPECT_EQ(reason, 0);
+}
+
+TEST(ArgparserFlag, ConflictFlagNotRegistered)
+{
+    int required = 1;
+    int reason = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(&required, "--required", "-r", ""));
+    EXPECT_FALSE(parser->flag(&reason, "--required", "-o", "A conflict flag"));
+    const char *arg[] = {"./argtest", "--required", "2", "-o", "8"};
+    // should fail, -o not registered
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(reason, 0);
+}
 
 int main(int argc, char **argv)
 {

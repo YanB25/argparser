@@ -43,25 +43,12 @@ std::string long_paragraph =
 // }
 int main(int argc, const char* argv[])
 {
-    bool t = false;
-    bool one = false;
-    bool f = true;
-    bool zero = true;
-    auto parser = argparser::new_parser("parse bool");
-    parser->flag(&t, "-t", "", "");
-    parser->flag(&one, "-one", "", "");
-    parser->flag(&f, "-f", "", "");
-    parser->flag(&zero, "-zero", "", "");
-    const char *arg[] = {"./argtest",
-                         "-t",
-                         "true",
-                         "-f",
-                         "false",
-                         "-one",
-                         "1",
-                         "-zero",
-                         "0"};
-    parser->parse(sizeof(arg) / sizeof(arg[0]), arg);
-    std::cout << "t " << t << ", one " << one << ", f " << f << ", zero " << zero << std::endl;
-
+    int required = 1;
+    int reason = 0;
+    auto parser = argparser::new_parser("parse int");
+    parser->flag(&required, "--required", "-r", "");
+    parser->flag(&reason, "--reason", "-r", "A conflict short flag");
+    const char *arg[] = {"./argtest", "-r", "2"};
+    bool ret = parser->parse(sizeof(arg) / sizeof(arg[0]), arg);
+    std::cout << "ret " << ret << " required " << required << " reason " << reason << std::endl;
 }
