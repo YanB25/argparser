@@ -20,10 +20,10 @@ TEST(ArgparserFlag, ParseInt)
     int neg = 1;
     auto parser = argparser::new_parser("parse int");
     EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
-    EXPECT_TRUE(parser->flag(&i, "--zero", "-z", "== 0"));
-    EXPECT_TRUE(parser->flag(&i, "--positive", "-p", "> 0"));
-    EXPECT_TRUE(parser->flag(&i, "--negative", "-n", "< 0"));
-    const char* arg[] = {"./argtest", "--int", "5", "--zero", "0", "--positive", "8", "--negative=-21"};
+    EXPECT_TRUE(parser->flag(&zero, "--zero", "-z", "== 0"));
+    EXPECT_TRUE(parser->flag(&pos, "--positive", "-p", "> 0"));
+    EXPECT_TRUE(parser->flag(&neg, "--negative", "-n", "< 0"));
+    const char* arg[] = {"./argtest", "--int", "5", "--zero", "0", "--positive", "8", "--negative", "-21"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(i, 5);
     EXPECT_EQ(zero, 0);

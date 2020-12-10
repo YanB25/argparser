@@ -23,7 +23,7 @@ int main(int argc, const char *argv[])
     std::string name;
     bool has_init;
     uint64_t tired;
-    uint64_t t2;
+    int64_t t2;
     parser.flag(&time, "--time", "-t", long_paragraph, "4");
     parser.flag(&name, "--name", "-n", long_paragraph.substr(300), "default");
     parser.flag(&has_init, "--init", "-i", long_paragraph.substr(500), "true");
@@ -38,4 +38,5 @@ int main(int argc, const char *argv[])
     std::cout << "time is " << time << std::endl;
     std::cout << "name is " << name << std::endl;
     std::cout << "init is " << has_init << std::endl;
+    std::cout << "t2 is " << t2 << std::endl;
 }

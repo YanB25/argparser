@@ -12,6 +12,7 @@
 
 #include "./common.hpp"
 #include "./flag-manager.hpp"
+#include "./debug.hpp"
 namespace argparser
 {
 class Parser
@@ -247,7 +248,7 @@ private:
                  * e.g. --flag_on
                  */
                 key = command_opt;
-                if (i + 1 >= argc || argv[i + 1][0] == '-')
+                if (i + 1 >= argc || flag::is_flag(argv[i + 1]))
                 {
                     // no value.
                 }
