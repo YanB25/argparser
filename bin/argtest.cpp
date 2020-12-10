@@ -55,6 +55,10 @@ TEST(ArgparserFlag, ParseBigInt)
     int64_t expect_m1 = (1ull << 63);
     expect_m1 += 3;
 
+    auto int_str = std::to_string(expect);
+    auto int_p1_str = std::to_string(expect_p1);
+    auto int_m1_str = std::to_string(expect_m1);
+
     auto parser = argparser::new_parser("parse int");
     EXPECT_TRUE(parser->flag(&big_int, "--big-int", "-b", "big number"));
     EXPECT_TRUE(
@@ -63,11 +67,11 @@ TEST(ArgparserFlag, ParseBigInt)
         parser->flag(&big_int_m_1, "--big-int-m-1", "-m", "big number - 1"));
     const char *arg[] = {"./argtest",
                          "--big-int",
-                         "-9223372036854775808",
+                         int_str.c_str(),
                          "--big-int-p-1",
-                         "-9223372036854775807",
+                         int_p1_str.c_str(),
                          "--big-int-m-1",
-                         "-9223372036854775805"};
+                         int_m1_str.c_str()};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(big_int, expect);
     EXPECT_EQ(big_int_p_1, expect_p1);
@@ -82,20 +86,49 @@ TEST(ArgparserFlag, ParseUnInt)
     uint32_t expect_ui = 1 << 30;
     uint64_t expect_u_big_i = 1ull << 60;
 
+    auto expect_str = std::to_string(expect_ui);
+    auto expect_u_big_i_str = std::to_string(expect_u_big_i);
+
     auto parser = argparser::new_parser("parse unint");
     EXPECT_TRUE(parser->flag(&ui, "--unsigned-int", "-u", "unsigned number"));
-    EXPECT_TRUE(
-        parser->flag(&u_big_i, "--unsigned-big-int", "-b", "unsigned big number"));
+    EXPECT_TRUE(parser->flag(
+        &u_big_i, "--unsigned-big-int", "-b", "unsigned big number"));
     const char *arg[] = {"./argtest",
                          "--unsigned-int",
-                         "1073741824",
+                         expect_str.c_str(),
                          "--unsigned-big-int",
-                         "1152921504606846976"};
+                         expect_u_big_i_str.c_str()};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(ui, expect_ui);
     EXPECT_EQ(u_big_i, expect_u_big_i);
 }
 
+TEST(ArgparserFlag, ParseBool)
+{
+    bool t = false;
+    bool one = false;
+    bool f = true;
+    bool zero = true;
+    auto parser = argparser::new_parser("parse bool");
+    EXPECT_TRUE(parser->flag(&t, "--tr", "", ""));
+    EXPECT_TRUE(parser->flag(&one, "--one", "", ""));
+    EXPECT_TRUE(parser->flag(&f, "--fa", "", ""));
+    EXPECT_TRUE(parser->flag(&zero, "--zero", "", ""));
+    const char *arg[] = {"./argtest",
+                         "--tr",
+                         "true",
+                         "--fa",
+                         "false",
+                         "--one",
+                         "1",
+                         "--zero",
+                         "0"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(t, true);
+    EXPECT_EQ(one, true);
+    EXPECT_EQ(f, false);
+    EXPECT_EQ(zero, false);
+}
 
 TEST(ArgparserFlag, ParseInt64)
 {
