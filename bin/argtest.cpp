@@ -74,6 +74,29 @@ TEST(ArgparserFlag, ParseBigInt)
     EXPECT_EQ(big_int_m_1, expect_m1);
 }
 
+TEST(ArgparserFlag, ParseUnInt)
+{
+    uint32_t ui;
+    uint64_t u_big_i;
+
+    uint32_t expect_ui = 1 << 30;
+    uint64_t expect_u_big_i = 1ull << 60;
+
+    auto parser = argparser::new_parser("parse unint");
+    EXPECT_TRUE(parser->flag(&ui, "--unsigned-int", "-u", "unsigned number"));
+    EXPECT_TRUE(
+        parser->flag(&u_big_i, "--unsigned-big-int", "-b", "unsigned big number"));
+    const char *arg[] = {"./argtest",
+                         "--unsigned-int",
+                         "1073741824",
+                         "--unsigned-big-int",
+                         "1152921504606846976"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(ui, expect_ui);
+    EXPECT_EQ(u_big_i, expect_u_big_i);
+}
+
+
 TEST(ArgparserFlag, ParseInt64)
 {
     int64_t i = 0;
