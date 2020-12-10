@@ -52,3 +52,5 @@ if (${BUILD_SHARED_LIBS})
     set_target_properties(argparser-dynamic PROPERTIES PUBLIC_HEADER "${HELLOWORLD_PUBLIC_HEADER}")
     install(TARGETS argparser-dynamic PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/argparser)
 endif()
+
+enable_testing()

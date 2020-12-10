@@ -16,7 +16,7 @@ std::string long_paragraph =
     "qui me ad alias litteras vocent, genus hoc scribendi,"
     "etsi sit elegans, personae tamen et dignitatis esse negent.";
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
     auto &parser = argparser::init("Simple Commandline tool");
     uint64_t time;

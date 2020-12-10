@@ -74,7 +74,7 @@ public:
         }
         print_promt();
     }
-    void print_promt(int argc, char *argv[]) const
+    void print_promt(int argc, const char *argv[]) const
     {
         auto pairs = retrieve(argc, argv);
         return print_promt(pairs);
@@ -108,7 +108,7 @@ public:
         return flag_manager_->add_flag(
             flag, full_name, short_name, desc, std::nullopt, true);
     }
-    bool parse(int argc, char *argv[])
+    bool parse(int argc, const char *argv[])
     {
         program_name = argv[0];
 
@@ -205,7 +205,7 @@ private:
         }
         return true;
     }
-    static FlagPairs retrieve(int argc, char *argv[])
+    static FlagPairs retrieve(int argc, const char *argv[])
     {
         FlagPairs ret;
         // skip program name, i start from 1
@@ -264,7 +264,7 @@ private:
         return ret;
     }
 };  // namespace argparser
-static Parser &init(const std::string &desc)
+Parser &init(const std::string &desc)
 {
     static Parser::Pointer root_parser;
     if (root_parser == nullptr)
@@ -272,6 +272,10 @@ static Parser &init(const std::string &desc)
         root_parser = Parser::new_instance(desc);
     }
     return *root_parser;
+}
+std::shared_ptr<Parser> new_parser(const std::string &desc)
+{
+    return std::make_shared<Parser>(desc);
 }
 }  // namespace argparser
 #endif
