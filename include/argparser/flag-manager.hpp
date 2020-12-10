@@ -30,13 +30,19 @@ public:
                   const std::optional<std::string> &default_val,
                   bool required)
     {
-        if (!is_full_flag(full_name))
+        if (!is_full_flag(full_name) && !is_short_flag(short_name))
+        {
+            std::cerr << "Failed to register flag " << full_name << ", " << short_name
+                      << ": Both flag formats are not allowed" << std::endl;
+            return false;
+        }
+        if (!full_name.empty() && !is_full_flag(full_name))
         {
             std::cerr << "Failed to register flag " << full_name
                       << ": identity not allowed" << std::endl;
             return false;
         }
-        if (!is_short_flag(short_name))
+        if (!short_name.empty() && !is_short_flag(short_name))
         {
             std::cerr << "Failed to register flag " << short_name << "("
                       << full_name << ")"

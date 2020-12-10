@@ -92,6 +92,24 @@ TEST(ArgparserFlag, ConflictFlagNotRegistered)
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(reason, 0);
 }
+TEST(ArgparserFlag, EmptyShortOrFullIsAllow)
+{
+    int required = 1;
+    int reason = 0;
+    int a = 0;
+    int b = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(&required, "--required", "", ""));
+    EXPECT_TRUE(parser->flag(&reason, "--reason", "", ""));
+    EXPECT_TRUE(parser->flag(&a, "", "-a", ""));
+    EXPECT_TRUE(parser->flag(&b, "", "-b", ""));
+    const char *arg[] = {"./argtest", "--required", "2", "--reason", "8", "-a", "-5", "-b", "-10"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(required, 2);
+    EXPECT_EQ(reason, 8);
+    EXPECT_EQ(a, -5);
+    EXPECT_EQ(b, -10);
+}
 
 int main(int argc, char **argv)
 {

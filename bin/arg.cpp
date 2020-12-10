@@ -43,12 +43,21 @@ std::string long_paragraph =
 // }
 int main(int argc, const char* argv[])
 {
+    #define EXPECT_TRUE(x) x
+    #define EXPECT_EQ(x, y) {std::cout << x << ", " << y << std::endl;}
     int required = 1;
     int reason = 0;
+    int a = 0;
+    int b = 0;
     auto parser = argparser::new_parser("parse int");
-    parser->flag(&required, "--required", "-r", "");
-    parser->flag(&reason, "--reason", "-r", "A conflict short flag");
-    const char *arg[] = {"./argtest", "-r", "2"};
-    bool ret = parser->parse(sizeof(arg) / sizeof(arg[0]), arg);
-    std::cout << "ret " << ret << " required " << required << " reason " << reason << std::endl;
+    EXPECT_TRUE(parser->flag(&required, "--required", "", ""));
+    EXPECT_TRUE(parser->flag(&reason, "--reason", "", ""));
+    EXPECT_TRUE(parser->flag(&a, "", "-a", ""));
+    EXPECT_TRUE(parser->flag(&b, "", "-b", ""));
+    const char *arg[] = {"./argtest", "--required", "2", "--reason", "8", "-a", "-5", "-b", "-10"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(required, 2);
+    EXPECT_EQ(reason, 8);
+    EXPECT_EQ(a, -5);
+    EXPECT_EQ(b, -10);
 }
