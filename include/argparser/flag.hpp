@@ -3,8 +3,6 @@
 
 #include <string>
 
-namespace hello
-{
 namespace argparser
 {
 namespace flag
@@ -118,6 +116,5 @@ bool ConcreteFlag<bool>::apply(const std::string &value)
 
 }  // namespace flag
 }  // namespace argparser
-}  // namespace hello
 
 #endif

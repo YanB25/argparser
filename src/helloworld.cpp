@@ -1,9 +1,8 @@
-#include "helloworld/helloworld.hpp"
-
-namespace hello
+#include <string>
+namespace test
 {
 std::string hello()
 {
     return "hello world!";
 }
-}  // namespace hello
+}  // namespace test

@@ -10,8 +10,6 @@
 #include "./common.hpp"
 #include "./flag.hpp"
 
-namespace hello
-{
 namespace argparser
 {
 namespace flag
@@ -220,5 +218,4 @@ private:
 };
 }  // namespace flag
 }  // namespace argparser
-}  // namespace hello
 #endif

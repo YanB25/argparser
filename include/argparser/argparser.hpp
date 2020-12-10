@@ -12,8 +12,6 @@
 
 #include "./common.hpp"
 #include "./flag-manager.hpp"
-namespace hello
-{
 namespace argparser
 {
 class Parser
@@ -276,5 +274,4 @@ static Parser &init(const std::string &desc)
     return *root_parser;
 }
 }  // namespace argparser
-}  // namespace hello
 #endif

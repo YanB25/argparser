@@ -1,7 +1,6 @@
 #include <iostream>
 
-#include "helloworld/argparser/all.hpp"
-using namespace hello;
+#include "argparser/all.hpp"
 
 std::string long_paragraph =
     "Lorem ipsum dolor sit amet, consectetuer adipiscing elit."

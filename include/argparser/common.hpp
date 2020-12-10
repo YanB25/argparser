@@ -1,9 +1,7 @@
-#ifndef ARGPARSER_COMMON_H
-#define ARGPARSER_COMMON_H
+#ifndef ARG_PARSER_COMMON_H
+#define ARG_PARSER_COMMON_H
 #include <cctype>
 #include <string>
-namespace hello
-{
 namespace argparser
 {
 namespace flag
@@ -25,5 +23,4 @@ inline static bool is_short_flag(const std::string &name)
 
 }  // namespace flag
 }  // namespace argparser
-}  // namespace hello
 #endif

@@ -2,7 +2,7 @@
 
 A C++ template to quickly start your own project.
 
-This template includes a simplest runnable helloworld program, which breaks down into a `helloworld` lib (see src/ and include/helloworld/) and an executable (see bin/main.cpp).
+This template includes a simplest runnable argparser program, which breaks down into a `argparser` lib (see src/ and include/argparser/) and an executable (see bin/main.cpp).
 
 ## Compile
 
@@ -18,7 +18,7 @@ make -j8
 
 ``` bash
 $ ./bin/main
-hello world!
+argparser world!
 ```
 
 ## Install & Uninstall
