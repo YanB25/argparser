@@ -281,7 +281,6 @@ TEST(ArgparserFlag, ParseAnyArray)
     EXPECT_EQ(barrs[3], false);
 }
 
-// TODO:allow space in array?
 // TODO: if an item of array is wrong, can it fail?
 
 int main(int argc, char **argv)

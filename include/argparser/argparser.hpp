@@ -174,7 +174,6 @@ private:
                 auto parser_it = sub_parsers_.find(key);
                 if (parser_it == sub_parsers_.end())
                 {
-                    // TODO: response to --help or -h.
                     std::cerr << "Failed to parse command \"" << key
                               << "\": use --help for usage." << std::endl;
                     return false;
