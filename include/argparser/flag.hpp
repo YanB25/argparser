@@ -113,6 +113,12 @@ bool ConcreteFlag<bool>::apply(const std::string &value)
     }
     return false;
 }
+template <>
+bool ConcreteFlag<std::string>::apply(const std::string &value)
+{
+    *flag_ = value;
+    return true;
+}
 
 }  // namespace flag
 }  // namespace argparser

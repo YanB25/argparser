@@ -127,6 +127,31 @@ TEST(ArgparserFlag, BothEmptyNotAllowed)
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(required, 1);
 }
+TEST(ArgparserFlag, SpaceIsEmptyAndIsNotAllowed)
+{
+    int a = 1;
+    int b = 1;
+    int c = 1;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_FALSE(parser->flag(&a, " ", "", ""));
+    EXPECT_FALSE(parser->flag(&b, "", " ", ""));
+    EXPECT_FALSE(parser->flag(&c, " ", " ", ""));
+    const char *arg[] = {"./argtest"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(a, 1);
+    EXPECT_EQ(b, 1);
+    EXPECT_EQ(c, 1);
+}
+TEST(ArgparserFlag, StringCanContainSpace)
+{
+    std::string name;
+    const char* content = "Hello world! It's a special long sentence.";
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(&name, "--name", "-n", "The name"));
+    const char *arg[] = {"./argtest", "--name", content};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_STREQ(name.c_str(), content);
+}
 
 int main(int argc, char **argv)
 {
