@@ -58,7 +58,31 @@ To provide a flag, `--flag value` and `--flag=value` are both supported.
 
 See `bin/helloworld.cpp` for the source codes of the above example. `bin/*.cpp` are other examples for you to play around.
 
-## Compile and sse
+## Why me
+
+The unique advantage of ArgParser over other similar implementations is the support of *structural parsing*.
+
+``` bash
+# example of flat input
+program
+    ├── flag-a
+    ├── flag-b
+    └── flag-c
+
+# example of structural input
+program
+    ├── cmd-1
+    │   ├── flag-e
+    │   └── flag-f
+    ├── cmd-2
+    │   └── flag-g
+    ├── flag-a
+    └── flag-b
+```
+
+In most command-line tools, *flags* are relevant only in the context of a *command*. ArgParser supports layer structure by parsing command recursively and collecting the relevant flags on the way. Any mismatch flags are deemed as an error.
+
+## Compile and use
 
 ``` bash
 mkdir build; cd build
