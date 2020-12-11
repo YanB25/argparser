@@ -10,4 +10,8 @@ add_executable(misc misc.cpp)
 target_link_libraries(misc gtest_main argparser_obj)
 add_test(NAME misc COMMAND misc)
 
+add_executable(cmd cmd.cpp)
+target_link_libraries(cmd gtest_main argparser_obj)
+add_test(NAME cmd COMMAND cmd)
+
 enable_testing()

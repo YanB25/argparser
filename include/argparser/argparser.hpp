@@ -90,6 +90,7 @@ public:
         max_command_len_ = std::max(max_command_len_, command.size());
         return *sub_parsers_[command];
     }
+    // TODO: make default has type?
     template <typename T>
     bool flag(T *flag,
               const std::string &full_name,
