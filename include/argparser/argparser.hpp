@@ -15,6 +15,7 @@
 #include "./flag-manager.hpp"
 namespace argparser
 {
+// TODO: unable to know the current command
 class Parser
 {
 public:
