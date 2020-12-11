@@ -221,6 +221,33 @@ TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists)
     const char *arg[] = {"./argtest", "--f", "5"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
+TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists2)
+{
+    int64_t flag = 1;
+    auto parser = argparser::new_parser("");
+    // failed to register, default value "" not parsable
+    EXPECT_FALSE(parser->flag(&flag, "--f", "", "", ""));
+    const char *arg[] = {"./argtest"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists3)
+{
+    int64_t flag = 1;
+    auto parser = argparser::new_parser("");
+    // failed to register, full-name flag does not follow --flag-name form
+    EXPECT_FALSE(parser->flag(&flag, "abc", "", ""));
+    const char *arg[] = {"./argtest"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists4)
+{
+    int64_t flag = 1;
+    auto parser = argparser::new_parser("");
+    // failed to register, full-name flag does not follow --flag-name form
+    EXPECT_FALSE(parser->flag(&flag, "abc", "", ""));
+    const char *arg[] = {"./argtest", "abc", "4"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
 
 int main(int argc, char **argv)
 {
