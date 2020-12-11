@@ -1,6 +1,8 @@
 #ifndef ARG_PARSER_FLAG_H
 #define ARG_PARSER_FLAG_H
 
+#include <iostream>
+#include <istream>
 #include <string>
 
 namespace argparser
@@ -91,6 +93,33 @@ private:
     std::string desc_;
     std::optional<std::string> default_;
 };
+template <typename>
+struct is_std_vector : std::false_type
+{
+};
+
+template <typename T, typename A>
+struct is_std_vector<std::vector<T, A>> : std::true_type
+{
+};
+
+// TODO: delegate parsing vector to parsing T.
+template <typename T>
+std::istream &operator>>(std::istream &is, std::vector<T> &vec)
+{
+    std::string token;
+    vec.clear();
+    while (!is.eof())
+    {
+        std::getline(is, token, ',');
+        T tmp;
+        std::istringstream iss(token);
+        iss >> tmp;
+        vec.push_back(tmp);
+    }
+    return is;
+}
+
 template <typename T>
 bool ConcreteFlag<T>::apply(const std::string &value)
 {
@@ -102,6 +131,33 @@ bool ConcreteFlag<T>::apply(const std::string &value)
     iss >> *flag_;
     return !iss.fail();
 }
+
+// template <typename T>
+// bool ConcreteFlag<T>::apply(const std::string &value)
+// {
+//     if constexpr (is_std_vector<T>::value)
+//     {
+//         auto splits = flag::split(value, ",");
+//         for (const auto& s: splits)
+//         {
+//             T tmp;
+//             std::istringstream iss(s);
+//             iss >> tmp;
+//             flag_->push_back(tmp);
+//         }
+//         return false;
+//     }
+//     else
+//     {
+//         if (value.find(' ') != std::string::npos)
+//         {
+//             return false;
+//         }
+//         std::istringstream iss(value);
+//         iss >> *flag_;
+//         return !iss.fail();
+//     }
+// }
 template <>
 bool ConcreteFlag<bool>::apply(const std::string &value)
 {
@@ -109,7 +165,7 @@ bool ConcreteFlag<bool>::apply(const std::string &value)
     {
         return false;
     }
-    
+
     if (value.empty() || value == "1" || value == "true")
     {
         *flag_ = true;

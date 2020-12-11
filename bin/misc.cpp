@@ -212,6 +212,15 @@ TEST(ArgparserFlag, FailedIfFlagProvidedTwice)
     const char *arg[] = {"./argtest", "--f", "5", "--f", "6"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
+TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists)
+{
+    int64_t flag = 1;
+    auto parser = argparser::new_parser("");
+    // failed to register, default value "" not parsable
+    EXPECT_FALSE(parser->flag(&flag, "--f", "", "", ""));
+    const char *arg[] = {"./argtest", "--f", "5"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
 
 int main(int argc, char **argv)
 {

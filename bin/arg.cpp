@@ -25,12 +25,14 @@ int main(int argc, const char *argv[])
     uint64_t tired;
     int64_t t2;
     double d;
+    std::vector<int64_t> vec;
     parser.flag(&time, "--time", "-t", long_paragraph, "4");
     parser.flag(&d, "--d", "", "", "5.2");
     parser.flag(&name, "--name", "-n", long_paragraph.substr(300), "default");
     parser.flag(&has_init, "--init", "-i", long_paragraph.substr(500), "true");
     parser.flag(&tired, "--tired", "", long_paragraph.substr(700), "4");
     parser.flag(&t2, "--t2", "", long_paragraph.substr(700), "-1");
+    parser.flag(&vec, "--vec", "", "");
     auto &start_parser =
         parser.command("start", "start a node in a multi-node cluster");
     start_parser.flag(&t2, "--test", "-t", long_paragraph.substr(500));
@@ -43,6 +45,7 @@ int main(int argc, const char *argv[])
     std::cout << "t2 is " << t2 << std::endl;
     std::cout << "has_init is " << has_init << std::endl;
     std::cout << "d is " << d << std::endl;
+    std::cout << "vec size is " << vec.size() << std::endl;
 }
 // int main(int argc, const char *argv[])
 // {
@@ -52,10 +55,14 @@ int main(int argc, const char *argv[])
 //     {                                             \
 //         std::cout << x << ", " << y << std::endl; \
 //     }
-//     int required = 1;
-//     auto parser = argparser::new_parser("parse int");
-//     EXPECT_FALSE(parser->flag(&required, "", "", ""));
-//     const char *arg[] = {"./argtest"};
+//     std::vector<int64_t> arrs;
+//     auto parser = argparser::new_parser("parse bool");
+//     EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", ""));
+//     const char *arg[] = {"./argtest", "--array", "1,2,3,4,5,6,7,8,9,10"};
 //     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-//     EXPECT_EQ(required, 1);
+//     EXPECT_EQ(arrs.size(), 10);
+//     for (int i = 0; i < 10; ++i)
+//     {
+//         EXPECT_EQ(arrs[i], i + 1);
+//     }
 // }

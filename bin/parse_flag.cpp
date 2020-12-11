@@ -169,6 +169,20 @@ TEST(ArgparserFlag, ParseDouble)
     EXPECT_DOUBLE_EQ(d4, -1e6);
 }
 
+TEST(ArgparserFlag, ParseArray)
+{
+    std::vector<int64_t> arrs;
+    auto parser = argparser::new_parser("parse bool");
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", ""));
+    const char *arg[] = {"./argtest", "--array", "1,2,3,4,5,6,7,8,9,10"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(arrs.size(), 10);
+    for (int i = 0; i < 10; ++i)
+    {
+        EXPECT_EQ(arrs[i], i + 1);
+    }
+}
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
