@@ -165,6 +165,20 @@ TEST(ArgparserCommand, RootCommandOnlyRequireRootFlag)
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(i, 12345);
 }
+TEST(ArgparserCommand, FailedIfRootCommandWithSubFlag)
+{
+    int64_t i;
+    uint64_t j;
+    auto parser = argparser::new_parser();
+    // failed to register, full-name flag does not follow --flag-name form
+    auto &sub_parser = parser->command("same");
+    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
+    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
+
+    const char *arg[] = {
+        "./argtest", "--j=12345"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
 TEST(ArgparserCommand, SubCommandNotAcceptRootFlag)
 {
     int64_t i;
@@ -193,6 +207,20 @@ TEST(ArgparserCommand, SubCommandOnlyRequireSubFlag)
         "./argtest", "same", "--j=23456"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(j, 23456);
+}
+TEST(ArgparserCommand, FailedIfSubCommandWithRootFlag)
+{
+    int64_t i;
+    uint64_t j;
+    auto parser = argparser::new_parser();
+    // failed to register, full-name flag does not follow --flag-name form
+    auto &sub_parser = parser->command("same");
+    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
+    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
+
+    const char *arg[] = {
+        "./argtest", "same", "--i=12345"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
 int main(int argc, char **argv)
 {
