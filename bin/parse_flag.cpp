@@ -19,7 +19,7 @@ TEST(ArgparserFlag, ParseInt)
     int zero = -1;
     int pos = -1;
     int neg = 1;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
     EXPECT_TRUE(parser->flag(&zero, "--zero", "-z", "== 0"));
     EXPECT_TRUE(parser->flag(&pos, "--positive", "-p", "> 0"));
@@ -44,7 +44,7 @@ TEST(ArgparserFlag, ParseInt64)
 {
     int64_t i = 0;
     int64_t i2 = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
     EXPECT_TRUE(parser->flag(&i2, "--int2", "-j", "number i2"));
     const char *arg[] = {"./argtest", "--int", "5", "--int2", "-5"};
@@ -53,28 +53,28 @@ TEST(ArgparserFlag, ParseInt64)
     EXPECT_EQ(i2, -5);
 }
 
-TEST(ArgparserFlag, ParseInt64ShouldFail)
+TEST(ArgparserFlag, ParseInt64ShouldFailForChar)
 {
     int64_t i = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
     const char *arg[] = {"./argtest", "--int", "5abc"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
 
-TEST(ArgparserFlag, ParseInt64ShouldFail2)
+TEST(ArgparserFlag, ParseInt64ShouldFailForSpace)
 {
     int64_t i = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
     const char *arg[] = {"./argtest", "--int", "5 abc"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
 
-TEST(ArgparserFlag, ParseInt64ShouldFail3)
+TEST(ArgparserFlag, ParseInt64ShouldFailForSpace2)
 {
     int64_t i = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
     const char *arg[] = {"./argtest", "--int", "5 10"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -99,7 +99,7 @@ TEST(ArgparserFlag, ParseBigInt)
     auto int_p1_str = std::to_string(expect_p1);
     auto int_m1_str = std::to_string(expect_m1);
 
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&big_int, "--big-int", "-b", "big number"));
     EXPECT_TRUE(
         parser->flag(&big_int_p_1, "--big-int-p-1", "-p", "big number + 1"));
@@ -129,7 +129,7 @@ TEST(ArgparserFlag, ParseUnInt)
     auto expect_str = std::to_string(expect_ui);
     auto expect_u_big_i_str = std::to_string(expect_u_big_i);
 
-    auto parser = argparser::new_parser("parse unint");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&ui, "--unsigned-int", "-u", "unsigned number"));
     EXPECT_TRUE(parser->flag(
         &u_big_i, "--unsigned-big-int", "-b", "unsigned big number"));
@@ -149,7 +149,7 @@ TEST(ArgparserFlag, ParseBool)
     bool one = false;
     bool f = true;
     bool zero = true;
-    auto parser = argparser::new_parser("parse bool");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&t, "--tr", "", ""));
     EXPECT_TRUE(parser->flag(&one, "--one", "", ""));
     EXPECT_TRUE(parser->flag(&f, "--fa", "", ""));
@@ -175,7 +175,7 @@ TEST(ArgparserFlag, ParseDouble)
     double d2;
     double d3;
     double d4;
-    auto parser = argparser::new_parser("parse bool");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&d1, "--d1", "", ""));
     EXPECT_TRUE(parser->flag(&d2, "--d2", "", ""));
     EXPECT_TRUE(parser->flag(&d3, "--d3", "", ""));
@@ -199,7 +199,7 @@ TEST(ArgparserFlag, ParseDouble)
 TEST(ArgparserFlag, ParseArray)
 {
     std::vector<int64_t> arrs;
-    auto parser = argparser::new_parser("parse bool");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", ""));
     const char *arg[] = {"./argtest", "--array", "1,2,3,4,5,6,7,8,9,10"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -213,7 +213,7 @@ TEST(ArgparserFlag, ParseArray)
 TEST(ArgparserFlag, ParseStringArray)
 {
     std::vector<std::string> arrs;
-    auto parser = argparser::new_parser("parse bool");
+    auto parser = argparser::new_parser();
     std::vector<std::string> expected = {
         "hello", "world", "my", "name", "is", "LiHua."
     };
@@ -231,7 +231,7 @@ TEST(ArgparserFlag, ParseStringWithComma)
 {
     std::string str;
     std::string expected = "hello,world,my,name,is,LiHua.";
-    auto parser = argparser::new_parser("parse bool");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&str, "--str", "-s", ""));
     const char *arg[] = {"./argtest", "--str", expected.c_str()};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -244,7 +244,7 @@ TEST(ArgparserFlag, ParseAnyArray)
     std::vector<uint64_t> uarrs;
     std::vector<double> darrs;
     std::vector<bool> barrs;
-    auto parser = argparser::new_parser("parse bool");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&iarrs, "--array-i", "-i", ""));
     EXPECT_TRUE(parser->flag(&uarrs, "--array-u", "-u", ""));
     EXPECT_TRUE(parser->flag(&darrs, "--array-d", "-d", ""));
@@ -284,7 +284,7 @@ TEST(ArgparserFlag, ParseAnyArray)
 TEST(ArgparserFlag, ParseArrayFailedAtMiddle)
 {
     std::vector<int64_t> array;
-    auto parser = argparser::new_parser("parser");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&array, "--array", "-a", "An array that has wrong middle elements"));
     const char *arg[] = {"./argtest", "-a", "1,2,t,4"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -292,7 +292,7 @@ TEST(ArgparserFlag, ParseArrayFailedAtMiddle)
 TEST(ArgparserFlag, ParseArrayFailedAtMiddle2)
 {
     std::vector<bool> array;
-    auto parser = argparser::new_parser("parser");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&array, "--array", "-a", "An array that has wrong middle elements"));
     // 2 is also not valid
     const char *arg[] = {"./argtest", "-a", "true,false,2,0"};

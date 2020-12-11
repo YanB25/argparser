@@ -273,7 +273,7 @@ Parser &init(const std::string &desc)
     }
     return *root_parser;
 }
-std::shared_ptr<Parser> new_parser(const std::string &desc)
+std::shared_ptr<Parser> new_parser(const std::string &desc = {})
 {
     return std::make_shared<Parser>(desc);
 }

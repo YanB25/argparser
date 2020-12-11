@@ -11,7 +11,7 @@ TEST(ArgparserFlag, Default)
     uint64_t uu = 0;
     bool t = false;
     bool f = true;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&i, "--i-val", "", "", "-123"));
     EXPECT_TRUE(parser->flag(&u, "--u-val", "", "", "456"));
     EXPECT_TRUE(parser->flag(&ii, "--ii-val", "", "", "-789"));
@@ -28,11 +28,11 @@ TEST(ArgparserFlag, Default)
     EXPECT_EQ(f, false);
 }
 
-TEST(ArgparserFlag, FailedIfRequiredNotProvided)
+TEST(ArgparserFlag, FailedIfRequiredFlagsNotProvided)
 {
     int required = 0;
     int optional = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(
         parser->flag(&required, "--required", "-r", "A required number"));
     EXPECT_TRUE(parser->flag(
@@ -41,11 +41,11 @@ TEST(ArgparserFlag, FailedIfRequiredNotProvided)
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
 
-TEST(ArgparserFlag, RequiredCanOverride)
+TEST(ArgparserFlag, CanOverrideDefaultValue)
 {
     int required = 1;
     int optional = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(
         parser->flag(&required, "--required", "-r", "A required number"));
     EXPECT_TRUE(parser->flag(
@@ -59,7 +59,7 @@ TEST(ArgparserFlag, NotAllowDupFullFlag)
 {
     int required = 1;
     int reason = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&required, "--required", "-r", ""));
     EXPECT_FALSE(parser->flag(&reason, "--required", "-o", "A conflict flag"));
     const char *arg[] = {"./argtest", "--required", "2"};
@@ -70,7 +70,7 @@ TEST(ArgparserFlag, NotAllowDupShortFlag)
 {
     int required = 1;
     int reason = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&required, "--required", "-r", ""));
     EXPECT_FALSE(
         parser->flag(&reason, "--reason", "-r", "A conflict short flag"));
@@ -80,11 +80,11 @@ TEST(ArgparserFlag, NotAllowDupShortFlag)
     EXPECT_EQ(reason, 0);
 }
 
-TEST(ArgparserFlag, ConflictFlagNotRegistered)
+TEST(ArgparserFlag, ConflictFlagShouldNotBeRegistered)
 {
     int required = 1;
     int reason = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&required, "--required", "-r", ""));
     EXPECT_FALSE(parser->flag(&reason, "--required", "-o", "A conflict flag"));
     const char *arg[] = {"./argtest", "--required", "2", "-o", "8"};
@@ -98,7 +98,7 @@ TEST(ArgparserFlag, EmptyShortOrFullIsAllow)
     int reason = 0;
     int a = 0;
     int b = 0;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&required, "--required", "", ""));
     EXPECT_TRUE(parser->flag(&reason, "--reason", "", ""));
     EXPECT_TRUE(parser->flag(&a, "", "-a", ""));
@@ -118,10 +118,10 @@ TEST(ArgparserFlag, EmptyShortOrFullIsAllow)
     EXPECT_EQ(a, -5);
     EXPECT_EQ(b, -10);
 }
-TEST(ArgparserFlag, BothEmptyNotAllowed)
+TEST(ArgparserFlag, BothShortAndFullEmptyIsNotAllowed)
 {
     int required = 1;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_FALSE(parser->flag(&required, "", "", ""));
     const char *arg[] = {"./argtest"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -132,7 +132,7 @@ TEST(ArgparserFlag, SpaceIsEmptyAndIsNotAllowed)
     int a = 1;
     int b = 1;
     int c = 1;
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_FALSE(parser->flag(&a, " ", "", ""));
     EXPECT_FALSE(parser->flag(&b, "", " ", ""));
     EXPECT_FALSE(parser->flag(&c, " ", " ", ""));
@@ -146,17 +146,17 @@ TEST(ArgparserFlag, StringCanContainSpace)
 {
     std::string name;
     const char* content = "Hello world! It's a special long sentence.";
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&name, "--name", "-n", "The name"));
     const char *arg[] = {"./argtest", "--name", content};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_STREQ(name.c_str(), content);
 }
-TEST(ArgparserFlag, CharStarNotAnArray)
+TEST(ArgparserFlag, CharPointerIsNotAnArray)
 {
     char buffer[1024] = {};
     const char* content = "Hello world! It's a special long sentence.";
-    auto parser = argparser::new_parser("parse int");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(buffer, "--name", "-n", "The name"));
     const char *arg[] = {"./argtest", "--name", content};
     parser->parse(sizeof(arg) / sizeof(arg[0]), arg);
@@ -168,11 +168,11 @@ TEST(ArgparserFlag, CharStarNotAnArray)
     }
 }
 
-TEST(ArgparserFlag, SpaceNotAllowIfItsNotString)
+TEST(ArgparserFlag, SpaceNotAllowIfItIsNotString)
 {
     int64_t i = 0;
     const char* str_i = "-123 456";
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     const char *arg[] = {"./argtest", "--i", str_i};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -181,7 +181,7 @@ TEST(ArgparserFlag, SpaceNotAllowIfItsNotString2)
 {
     uint64_t u = 0;
     const char* str_u = "123 456";
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&u, "--u", "", ""));
     const char *arg[] = {"./argtest", "--u", str_u};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -190,7 +190,7 @@ TEST(ArgparserFlag, SpaceNotAllowIfItsNotString3)
 {
     bool b = false;
     const char* str_b = "true 1";
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&b, "--b", "", ""));
     const char *arg[] = {"./argtest", "--b", str_b};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -199,7 +199,7 @@ TEST(ArgparserFlag, SpaceNotAllowIfItsNotString4)
 {
     double d = 1;
     const char* str_d = "1.4234 5";
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&d, "--d", "", ""));
     const char *arg[] = {"./argtest", "--d", str_d};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
@@ -207,42 +207,42 @@ TEST(ArgparserFlag, SpaceNotAllowIfItsNotString4)
 TEST(ArgparserFlag, FailedIfFlagProvidedTwice)
 {
     int64_t flag = 1;
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     EXPECT_TRUE(parser->flag(&flag, "--f", "", ""));
     const char *arg[] = {"./argtest", "--f", "5", "--f", "6"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
-TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists)
+TEST(ArgparserFlag, FlagThatFailedToRegisterShouldNotExists)
 {
     int64_t flag = 1;
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     // failed to register, default value "" not parsable
     EXPECT_FALSE(parser->flag(&flag, "--f", "", "", ""));
     const char *arg[] = {"./argtest", "--f", "5"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
-TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists2)
+TEST(ArgparserFlag, FlagThatFailedToRegisterShouldNotExists2)
 {
     int64_t flag = 1;
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     // failed to register, default value "" not parsable
     EXPECT_FALSE(parser->flag(&flag, "--f", "", "", ""));
     const char *arg[] = {"./argtest"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
-TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists3)
+TEST(ArgparserFlag, FlagThatFailedToRegisterShouldNotExists3)
 {
     int64_t flag = 1;
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     // failed to register, full-name flag does not follow --flag-name form
     EXPECT_FALSE(parser->flag(&flag, "abc", "", ""));
     const char *arg[] = {"./argtest"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
-TEST(ArgparserFlag, FailedToRegisteredOneShouldNotExists4)
+TEST(ArgparserFlag, FlagThatFailedToRegisterShouldNotExists4)
 {
     int64_t flag = 1;
-    auto parser = argparser::new_parser("");
+    auto parser = argparser::new_parser();
     // failed to register, full-name flag does not follow --flag-name form
     EXPECT_FALSE(parser->flag(&flag, "abc", "", ""));
     const char *arg[] = {"./argtest", "abc", "4"};
