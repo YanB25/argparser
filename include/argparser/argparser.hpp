@@ -40,6 +40,7 @@ public:
         print_usage();
         print_command();
         flag_manager_->print_flags();
+        gf_manager_->print_flags("Global Flag");
     }
     void print_promt(FlagPairs &pairs) const
     {
@@ -178,11 +179,21 @@ private:
 
     void print_usage() const
     {
-        if (!flag_manager_->empty())
+        if (!flag_manager_->empty() || !sub_parsers_.empty())
         {
-            std::cout << "Usage:" << std::endl
-                      << "  " << program_name << " [flag]" << std::endl
+            std::cout << "Usage:" << std::endl;
+        }
+        if (!sub_parsers_.empty())
+        {
+            std::cout << std::string(8, ' ') << program_name << " [command]"
                       << std::endl;
+        }
+        if (!flag_manager_->empty())
+            std::cout << std::string(8, ' ') << program_name << " [flag]"
+                      << std::endl;
+        if (!flag_manager_->empty() || !sub_parsers_.empty())
+        {
+            std::cout << std::endl;
         }
     }
     const flag::FlagManager::Pointer flag_manager() const

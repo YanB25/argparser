@@ -47,7 +47,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
             os << ", ";
         }
     }
-    os << "]" << std::endl;
+    os << "]";
     return os;
 }
 std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& vec)
@@ -61,7 +61,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& vec)
             os << ", ";
         }
     }
-    os << "]" << std::endl;
+    os << "]";
     return os;
 }
 

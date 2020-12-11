@@ -4,6 +4,7 @@
 
 int main(int argc, const char *argv[])
 {
+    uint64_t limit;
     int64_t time;
     uint64_t tries;
     bool init;
@@ -11,6 +12,7 @@ int main(int argc, const char *argv[])
     parser.flag(&init, "--init", "-i", argparser::long_sentence, "false");
     parser.flag(&time, "--time", "-t", argparser::short_sentence, "0");
     parser.flag(&tries, "--tries", "", argparser::very_short_sentence, "0");
+    parser.global_flag(&limit, "--limit", "-L", argparser::very_short_sentence, "0");
 
     uint64_t thread_nr;
     auto &sub_parser = parser.command(
@@ -28,6 +30,7 @@ int main(int argc, const char *argv[])
     std::cout << "time: " << time << std::endl;
     std::cout << "tries: " << tries << std::endl;
     std::cout << "thread_nr: " << thread_nr << std::endl;
+    std::cout << "limit: " << limit << std::endl;
 
     return 0;
 }

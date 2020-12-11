@@ -163,13 +163,13 @@ public:
         return ret;
     }
     // TODO: make it formator
-    void print_flags() const
+    void print_flags(const std::string& title = "Flags") const
     {
         if (empty())
         {
             return;
         }
-        std::cout << "Flags:" << std::endl;
+        std::cout << title << ":" << std::endl;
         for (const auto &flag : flags_)
         {
             auto short_name = flag->short_name();
@@ -203,6 +203,7 @@ public:
             std::cout << desc;
             std::cout << std::endl;
         }
+        std::cout << std::endl;
     }
 
     FlagManager() = default;
