@@ -162,10 +162,15 @@ public:
     }
     bool parse(int argc, const char *argv[])
     {
+        command_path_.clear();
         program_name = argv[0];
 
         auto pairs = retrieve(argc, argv);
-        return do_parse(pairs);
+        return do_parse(pairs, command_path_);
+    }
+    std::vector<std::string> command_path() const
+    {
+        return command_path_;
     }
 
 private:
@@ -177,6 +182,8 @@ private:
     flag::FlagManager::Pointer gf_manager_;
     std::unordered_map<std::string, Pointer> sub_parsers_;
     size_t max_command_len_{0};
+
+    std::vector<std::string> command_path_;
 
     void print_usage() const
     {
@@ -215,7 +222,7 @@ private:
             std::cout << std::endl;
         }
     }
-    bool do_parse(FlagPairs &pairs)
+    bool do_parse(FlagPairs &pairs, std::vector<std::string>& command_path)
     {
         init_ = true;
 
@@ -244,7 +251,8 @@ private:
                 // remove [begin, pair_it] and pass the remaining to the
                 // sub_parser
                 pairs.erase(pairs.begin(), ++pair_it);
-                return sub_parser->do_parse(pairs);
+                command_path.push_back(key);
+                return sub_parser->do_parse(pairs, command_path);
             }
 
             if (!flag_manager_->apply(key, value) &&

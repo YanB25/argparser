@@ -31,6 +31,8 @@ int main(int argc, const char *argv[])
     std::cout << "tries: " << tries << std::endl;
     std::cout << "thread_nr: " << thread_nr << std::endl;
     std::cout << "limit: " << limit << std::endl;
+    using argparser::flag::operator<<;
+    std::cout << "command path: " << parser.command_path() << std::endl;
 
     return 0;
 }
