@@ -105,7 +105,13 @@ std::istream &operator>>(std::istream &is, std::vector<T> &vec)
     {
         std::getline(is, token, ',');
         T tmp;
-        ConcreteFlag<T>::apply_to(&tmp, token);
+        bool succ = ConcreteFlag<T>::apply_to(&tmp, token);
+        if (!succ)
+        {
+            // manually set fail bit
+            is.setstate(std::ios_base::failbit);
+            return is;
+        }
         vec.emplace_back(std::move(tmp));
     }
     return is;

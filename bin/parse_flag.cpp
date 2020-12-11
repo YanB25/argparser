@@ -281,7 +281,23 @@ TEST(ArgparserFlag, ParseAnyArray)
     EXPECT_EQ(barrs[3], false);
 }
 
-// TODO: if an item of array is wrong, can it fail?
+TEST(ArgparserFlag, ParseArrayFailedAtMiddle)
+{
+    std::vector<int64_t> array;
+    auto parser = argparser::new_parser("parser");
+    EXPECT_TRUE(parser->flag(&array, "--array", "-a", "An array that has wrong middle elements"));
+    const char *arg[] = {"./argtest", "-a", "1,2,t,4"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+TEST(ArgparserFlag, ParseArrayFailedAtMiddle2)
+{
+    std::vector<bool> array;
+    auto parser = argparser::new_parser("parser");
+    EXPECT_TRUE(parser->flag(&array, "--array", "-a", "An array that has wrong middle elements"));
+    // 2 is also not valid
+    const char *arg[] = {"./argtest", "-a", "true,false,2,0"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
 
 int main(int argc, char **argv)
 {
