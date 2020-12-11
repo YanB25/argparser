@@ -119,6 +119,23 @@ TEST(ArgparserCommand, ShouldFollowLongFlag)
     EXPECT_EQ(i, 12345);
 }
 
+TEST(ArgparserCommand, SameCommandSameParser)
+{
+    int64_t i;
+    uint64_t j;
+    auto parser = argparser::new_parser();
+    // failed to register, full-name flag does not follow --flag-name form
+    auto &sub_parser_1 = parser->command("same");
+    auto &sub_parser_2 = parser->command("same");
+    EXPECT_TRUE(sub_parser_1.flag(&i, "--i", "", "", "0"));
+    EXPECT_TRUE(sub_parser_2.flag(&j, "--j", "", "", "0"));
+
+    const char *arg[] = {
+        "./argtest", "same", "--i=12345", "--j=23456"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(i, 12345);
+    EXPECT_EQ(j, 23456);
+}
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
