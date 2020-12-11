@@ -63,6 +63,8 @@ public:
                       << ": flag already registered" << std::endl;
             return false;
         }
+        flags_.emplace_back(flag::ConcreteFlag<T>::make_flag(
+            slot, full_name, short_name, desc, default_val));
         if (default_val.has_value())
         {
             if (!flags_.back()->apply_default())
@@ -70,14 +72,14 @@ public:
                 std::cerr << "Failed to register flag " << full_name << ": "
                           << "default value \"" << default_val.value()
                           << "\" not parsable" << std::endl;
+                // pop the error one
+                flags_.pop_back();
                 return false;
             }
         }
-        flags_.emplace_back(flag::ConcreteFlag<T>::make_flag(
-            slot, full_name, short_name, desc, default_val));
         required_.emplace_back(required);
         applied_.emplace_back(false);
-        
+
         max_full_name_len_ = std::max(max_full_name_len_, full_name.size());
         max_short_name_len_ = std::max(max_short_name_len_, short_name.size());
         /**
