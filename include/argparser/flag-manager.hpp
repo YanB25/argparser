@@ -235,6 +235,22 @@ private:
     size_t max_full_name_len_{0};
     size_t max_short_name_len_{0};
 };
+
+class GlobalFlagManager
+{
+public:
+    static FlagManager& instance()
+    {
+        static std::shared_ptr<FlagManager> global_flag_manager;
+        if (global_flag_manager == nullptr)
+        {
+            global_flag_manager = std::make_shared<FlagManager>();
+        }
+        return *global_flag_manager;
+    }
+    GlobalFlagManager() = delete;
+private:
+};
 }  // namespace flag
 }  // namespace argparser
 #endif
