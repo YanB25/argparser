@@ -20,7 +20,6 @@ TEST(ArgparserParseGlobalFlag, ShouldParseGlobalFlag)
     bool g_b = false;
 
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     EXPECT_TRUE(parser->global_flag(&g_i, "--gi", "", "", "0"));
     EXPECT_TRUE(parser->global_flag(&g_u, "--gu", "", "", "0"));
     EXPECT_TRUE(parser->global_flag(&g_s, "--gs", "", "", "0"));
@@ -66,7 +65,6 @@ TEST(ArgparserCommand, ShouldParseNonGlobalFlag)
     bool g_b = false;
 
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     EXPECT_TRUE(parser->global_flag(&g_i, "--gi", "", "", "0"));
     EXPECT_TRUE(parser->global_flag(&g_u, "--gu", "", "", "0"));
     EXPECT_TRUE(parser->global_flag(&g_s, "--gs", "", "", "0"));
@@ -97,128 +95,60 @@ TEST(ArgparserCommand, ShouldParseNonGlobalFlag)
     EXPECT_EQ(d, -7.5);
     EXPECT_EQ(b, true);
 }
-TEST(ArgparserCommand, ShouldFollowLongFlag)
+TEST(ArgparserCommand, ShouldConflit)
 {
     int64_t i;
+    uint64_t j;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
+    EXPECT_TRUE(parser->flag(&i, "--i", "-j", "", "0"));
+    EXPECT_FALSE(parser->global_flag(&j, "--i", "-k", "", "0"));
+}
+TEST(ArgparserCommand, ShouldConflit2)
+{
+    int64_t i;
+    uint64_t j;
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&i, "--i", "-k", "", "0"));
+    EXPECT_FALSE(parser->global_flag(&j, "--j", "-k", "", "0"));
+}
+
+TEST(ArgparserCommand, GlobalIsAlwaysGlobal)
+{
+    int64_t i;
+    int64_t trivial;
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->global_flag(&i, "--i", "-k", "", "0"));
     auto &sub_parser_1 = parser->command("one");
     auto &sub_parser_2 = sub_parser_1.command("two");
     auto &sub_parser_3 = sub_parser_2.command("three");
     auto &sub_parser_4 = sub_parser_3.command("four");
     auto &sub_parser_5 = sub_parser_4.command("five");
     auto &sub_parser_6 = sub_parser_5.command("six");
-    EXPECT_TRUE(sub_parser_6.flag(&i, "--i", "", "", "0"));
-
+    EXPECT_TRUE(sub_parser_6.global_flag(&trivial, "--trivial", "", "", "0"));
+    const char *arg[] = {
+        "./argtest", "one", "two", "three", "four", "five", "six", "--i=12345"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(i, 12345);
+}
+TEST(ArgparserCommand, GlobalIsAlwaysGlobal2)
+{
+    int64_t i;
+    int64_t trivial;
+    auto parser = argparser::new_parser();
+    auto &sub_parser_1 = parser->command("one");
+    auto &sub_parser_2 = sub_parser_1.command("two");
+    auto &sub_parser_3 = sub_parser_2.command("three");
+    auto &sub_parser_4 = sub_parser_3.command("four");
+    auto &sub_parser_5 = sub_parser_4.command("five");
+    auto &sub_parser_6 = sub_parser_5.command("six");
+    EXPECT_TRUE(sub_parser_3.global_flag(&i, "--i", "-k", "", "0"));
+    EXPECT_TRUE(sub_parser_6.global_flag(&trivial, "--trivial", "", "", "0"));
     const char *arg[] = {
         "./argtest", "one", "two", "three", "four", "five", "six", "--i=12345"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(i, 12345);
 }
 
-TEST(ArgparserCommand, SameCommandSameParser)
-{
-    int64_t i;
-    uint64_t j;
-    auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
-    auto &sub_parser_1 = parser->command("same");
-    auto &sub_parser_2 = parser->command("same");
-    EXPECT_TRUE(sub_parser_1.flag(&i, "--i", "", "", "0"));
-    EXPECT_TRUE(sub_parser_2.flag(&j, "--j", "", "", "0"));
-
-    const char *arg[] = {
-        "./argtest", "same", "--i=12345", "--j=23456"};
-    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    EXPECT_EQ(i, 12345);
-    EXPECT_EQ(j, 23456);
-}
-TEST(ArgparserCommand, RootCommandNotAcceptSubFlag)
-{
-    int64_t i;
-    uint64_t j;
-    auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
-    auto &sub_parser = parser->command("same");
-    EXPECT_TRUE(parser->flag(&i, "--i", "", "", "0"));
-    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", "", "0"));
-
-    const char *arg[] = {
-        "./argtest", "--j=23456"};
-    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-}
-TEST(ArgparserCommand, RootCommandOnlyRequireRootFlag)
-{
-    int64_t i;
-    uint64_t j;
-    auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
-    auto &sub_parser = parser->command("same");
-    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
-    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
-
-    const char *arg[] = {
-        "./argtest", "--i=12345"};
-    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    EXPECT_EQ(i, 12345);
-}
-TEST(ArgparserCommand, FailedIfRootCommandWithSubFlag)
-{
-    int64_t i;
-    uint64_t j;
-    auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
-    auto &sub_parser = parser->command("same");
-    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
-    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
-
-    const char *arg[] = {
-        "./argtest", "--j=12345"};
-    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-}
-TEST(ArgparserCommand, SubCommandNotAcceptRootFlag)
-{
-    int64_t i;
-    uint64_t j;
-    auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
-    auto &sub_parser = parser->command("same");
-    EXPECT_TRUE(parser->flag(&i, "--i", "", "", "0"));
-    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", "", "0"));
-
-    const char *arg[] = {
-        "./argtest", "same", "--i=12345"};
-    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-}
-TEST(ArgparserCommand, SubCommandOnlyRequireSubFlag)
-{
-    int64_t i;
-    uint64_t j;
-    auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
-    auto &sub_parser = parser->command("same");
-    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
-    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
-
-    const char *arg[] = {
-        "./argtest", "same", "--j=23456"};
-    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    EXPECT_EQ(j, 23456);
-}
-TEST(ArgparserCommand, FailedIfSubCommandWithRootFlag)
-{
-    int64_t i;
-    uint64_t j;
-    auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
-    auto &sub_parser = parser->command("same");
-    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
-    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
-
-    const char *arg[] = {
-        "./argtest", "same", "--i=12345"};
-    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-}
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

@@ -20,7 +20,6 @@ TEST(ArgparserCommand, ShouldParseCommandFlag)
     bool root_b = false;
 
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     EXPECT_TRUE(parser->flag(&root_i, "--i", "", "", "0"));
     EXPECT_TRUE(parser->flag(&root_u, "--u", "", "", "0"));
     EXPECT_TRUE(parser->flag(&root_s, "--s", "", "", "0"));
@@ -68,7 +67,6 @@ TEST(ArgparserCommand, ShouldParseRootFlag)
     bool root_b = false;
 
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     EXPECT_TRUE(parser->flag(&root_i, "--i", "", "", "0"));
     EXPECT_TRUE(parser->flag(&root_u, "--u", "", "", "0"));
     EXPECT_TRUE(parser->flag(&root_s, "--s", "", "", "0"));
@@ -104,7 +102,6 @@ TEST(ArgparserCommand, ShouldFollowLongFlag)
 {
     int64_t i;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     auto &sub_parser_1 = parser->command("one");
     auto &sub_parser_2 = sub_parser_1.command("two");
     auto &sub_parser_3 = sub_parser_2.command("three");
@@ -124,7 +121,6 @@ TEST(ArgparserCommand, SameCommandSameParser)
     int64_t i;
     uint64_t j;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     auto &sub_parser_1 = parser->command("same");
     auto &sub_parser_2 = parser->command("same");
     EXPECT_TRUE(sub_parser_1.flag(&i, "--i", "", "", "0"));
@@ -141,7 +137,6 @@ TEST(ArgparserCommand, RootCommandNotAcceptSubFlag)
     int64_t i;
     uint64_t j;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     auto &sub_parser = parser->command("same");
     EXPECT_TRUE(parser->flag(&i, "--i", "", "", "0"));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", "", "0"));
@@ -155,7 +150,6 @@ TEST(ArgparserCommand, RootCommandOnlyRequireRootFlag)
     int64_t i;
     uint64_t j;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     auto &sub_parser = parser->command("same");
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
@@ -170,7 +164,6 @@ TEST(ArgparserCommand, FailedIfRootCommandWithSubFlag)
     int64_t i;
     uint64_t j;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     auto &sub_parser = parser->command("same");
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
@@ -184,7 +177,6 @@ TEST(ArgparserCommand, SubCommandNotAcceptRootFlag)
     int64_t i;
     uint64_t j;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     auto &sub_parser = parser->command("same");
     EXPECT_TRUE(parser->flag(&i, "--i", "", "", "0"));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", "", "0"));
@@ -198,7 +190,6 @@ TEST(ArgparserCommand, SubCommandOnlyRequireSubFlag)
     int64_t i;
     uint64_t j;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     auto &sub_parser = parser->command("same");
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
@@ -213,7 +204,6 @@ TEST(ArgparserCommand, FailedIfSubCommandWithRootFlag)
     int64_t i;
     uint64_t j;
     auto parser = argparser::new_parser();
-    // failed to register, full-name flag does not follow --flag-name form
     auto &sub_parser = parser->command("same");
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
