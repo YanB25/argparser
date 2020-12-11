@@ -1,10 +1,10 @@
 # ArgParser: A lightweight C++ command-line parser
 
-ArgParser is a lightweight command line parser written in C++. The goal of ArgParser is to provide a convenient easy-to-use library for building a command-line program.
+ArgParser is a lightweight command line parser written in C++. The goal of ArgParser is to provide a convenient and easy-to-use library for building command-line programs.
 
-ArgParser is lightweight because it has no dependency.
+ArgParser is lightweight and has no dependency.
 
-Feel free to pull request or open an issue if you have any problem.
+Feel free to pull-request or open an issue if you have any problems.
 
 ## Quick Start
 
@@ -54,9 +54,15 @@ Flags:
 
 The magic of the lib is that the command-line arguments are validated, parsed and stored into the variables you registered with `parser.flag(...)`. ArgParser even recognizes `vector` and `string` as well as the primitive types.
 
-To provide a flag, `--flag value` and `--flag=value` are both supported.
+To provide a flag, use either `--flag value` or `--flag=value`.
 
 See `bin/helloworld.cpp` for the source codes of the above example. `bin/*.cpp` are other examples for you to play around.
+
+## Concept
+
+The central concepts of ArgParser are *commands* and *flags*. Defining a new *command* essentially enters a new namespace. Namespaces can be nested arbitrarily. Only the specific flags defined within the current command(namespace) is recognized and parsed. Providing extra flags within other namespaces, including the parent namespace, is deemed a careless mistake.
+
+*global flags* are also support to specify global setting/constraints for the program.
 
 ## Why me
 
