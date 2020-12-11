@@ -195,6 +195,15 @@ TEST(ArgparserFlag, SpaceNotAllowIfItsNotString3)
     const char *arg[] = {"./argtest", "--b", str_b};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
+TEST(ArgparserFlag, SpaceNotAllowIfItsNotString4)
+{
+    double d = 1;
+    const char* str_d = "1.4234 5";
+    auto parser = argparser::new_parser("");
+    EXPECT_TRUE(parser->flag(&d, "--d", "", ""));
+    const char *arg[] = {"./argtest", "--d", str_d};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
 
 int main(int argc, char **argv)
 {
