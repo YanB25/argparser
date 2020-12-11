@@ -53,7 +53,6 @@ TEST(ArgparserFlag, ParseInt64)
     EXPECT_EQ(i2, -5);
 }
 
-
 TEST(ArgparserFlag, ParseBigInt)
 {
     int64_t big_int;
@@ -142,6 +141,32 @@ TEST(ArgparserFlag, ParseBool)
     EXPECT_EQ(one, true);
     EXPECT_EQ(f, false);
     EXPECT_EQ(zero, false);
+}
+TEST(ArgparserFlag, ParseDouble)
+{
+    double d1;
+    double d2;
+    double d3;
+    double d4;
+    auto parser = argparser::new_parser("parse bool");
+    EXPECT_TRUE(parser->flag(&d1, "--d1", "", ""));
+    EXPECT_TRUE(parser->flag(&d2, "--d2", "", ""));
+    EXPECT_TRUE(parser->flag(&d3, "--d3", "", ""));
+    EXPECT_TRUE(parser->flag(&d4, "--d4", "", ""));
+    const char *arg[] = {"./argtest",
+                         "--d1",
+                         "314.564",
+                         "--d2",
+                         "-423.523",
+                         "--d3",
+                         "1e8",
+                         "--d4",
+                         "-1e6"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_DOUBLE_EQ(d1, 314.564);
+    EXPECT_DOUBLE_EQ(d2, -423.523);
+    EXPECT_DOUBLE_EQ(d3, 1e8);
+    EXPECT_DOUBLE_EQ(d4, -1e6);
 }
 
 int main(int argc, char **argv)
