@@ -210,6 +210,34 @@ TEST(ArgparserFlag, ParseArray)
     }
 }
 
+TEST(ArgparserFlag, ParseStringArray)
+{
+    std::vector<std::string> arrs;
+    auto parser = argparser::new_parser("parse bool");
+    std::vector<std::string> expected = {
+        "hello", "world", "my", "name", "is", "LiHua."
+    };
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", ""));
+    const char *arg[] = {"./argtest", "--array", "hello,world,my,name,is,LiHua."};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    ASSERT_EQ(arrs.size(), expected.size());
+    for (size_t i = 0; i < expected.size(); ++i)
+    {
+        EXPECT_EQ(arrs[i], expected[i]);
+    }
+}
+
+TEST(ArgparserFlag, ParseStringWithComma)
+{
+    std::string str;
+    std::string expected = "hello,world,my,name,is,LiHua.";
+    auto parser = argparser::new_parser("parse bool");
+    EXPECT_TRUE(parser->flag(&str, "--str", "-s", ""));
+    const char *arg[] = {"./argtest", "--str", expected.c_str()};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_STREQ(str.c_str(), expected.c_str());
+}
+
 TEST(ArgparserFlag, ParseAnyArray)
 {
     std::vector<int64_t> iarrs;
