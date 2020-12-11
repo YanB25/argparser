@@ -117,11 +117,13 @@ All the necessary files are in `include/argparser`. A `cp` will work.
 
 ## Run
 
+After build,
+
 ``` bash
-$ ./bin/main
-argparser world!
+$ ./bin/arg
 ```
 
+is a more interesting program to play around.
 ## Others
 
 ### clang-format
