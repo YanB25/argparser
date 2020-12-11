@@ -13,8 +13,7 @@ inline static bool is_full_flag(const std::string &name)
 }
 inline static bool is_short_flag(const std::string &name)
 {
-    return name.empty() ||
-           (name.size() >= 2 && name[0] == '-' && isalpha(name[1]));
+    return name.size() >= 2 && name[0] == '-' && isalpha(name[1]);
 }
 inline static bool is_flag(const std::string &str)
 {

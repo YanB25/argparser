@@ -103,12 +103,29 @@ TEST(ArgparserFlag, EmptyShortOrFullIsAllow)
     EXPECT_TRUE(parser->flag(&reason, "--reason", "", ""));
     EXPECT_TRUE(parser->flag(&a, "", "-a", ""));
     EXPECT_TRUE(parser->flag(&b, "", "-b", ""));
-    const char *arg[] = {"./argtest", "--required", "2", "--reason", "8", "-a", "-5", "-b", "-10"};
+    const char *arg[] = {"./argtest",
+                         "--required",
+                         "2",
+                         "--reason",
+                         "8",
+                         "-a",
+                         "-5",
+                         "-b",
+                         "-10"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(required, 2);
     EXPECT_EQ(reason, 8);
     EXPECT_EQ(a, -5);
     EXPECT_EQ(b, -10);
+}
+TEST(ArgparserFlag, BothEmptyNotAllowed)
+{
+    int required = 1;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_FALSE(parser->flag(&required, "", "", ""));
+    const char *arg[] = {"./argtest"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(required, 1);
 }
 
 int main(int argc, char **argv)
