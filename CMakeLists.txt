@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.12.4)
 project (argparser)
 
 option(BUILD_BINARIES "Build the binaries in {project}/bin directory" ON)
+option(BUILD_UNITTEST "Build the unittest in {project}/test directory" ON)
 option(BUILD_STATIC_LIBS "Build the static library" ON)
 option(BUILD_SHARED_LIBS "Build the shared library" ON)
 
@@ -37,6 +38,11 @@ if (${BUILD_BINARIES})
     add_subdirectory(bin)
 endif()
 
+if (${BUILD_UNITTEST})
+    add_subdirectory(test)
+    enable_testing()
+endif()
+
 if (${BUILD_STATIC_LIBS})
     add_library(argparser-static STATIC $<TARGET_OBJECTS:argparser_obj>)
 
@@ -52,5 +58,3 @@ if (${BUILD_SHARED_LIBS})
     set_target_properties(argparser-dynamic PROPERTIES PUBLIC_HEADER "${HELLOWORLD_PUBLIC_HEADER}")
     install(TARGETS argparser-dynamic PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/argparser)
 endif()
-
-enable_testing()
