@@ -14,4 +14,8 @@ add_executable(cmd cmd.cpp)
 target_link_libraries(cmd gtest_main argparser_obj)
 add_test(NAME cmd COMMAND cmd)
 
+add_executable(global_flag global_flag.cpp)
+target_link_libraries(global_flag gtest_main argparser_obj)
+add_test(NAME global_flag COMMAND global_flag)
+
 enable_testing()

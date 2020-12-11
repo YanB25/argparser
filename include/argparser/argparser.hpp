@@ -21,15 +21,12 @@ public:
     using Pointer = std::unique_ptr<Parser>;
     using FlagPair = std::pair<std::string, std::string>;
     using FlagPairs = std::list<FlagPair>;
-    Parser(const std::string &description)
+    Parser(std::shared_ptr<flag::FlagManager> global_flag_manager,
+           const std::string &description)
         : description_(description),
           flag_manager_(flag::FlagManager::new_instance()),
-          gf_manager_(flag::GlobalFlagManager::instance())
+          gf_manager_(global_flag_manager)
     {
-    }
-    static Pointer new_instance(const std::string &desc = {})
-    {
-        return std::make_unique<Parser>(desc);
     }
     void print_promt() const
     {
@@ -87,7 +84,8 @@ public:
     }
     Parser &command(const std::string &command, const std::string &desc = {})
     {
-        sub_parsers_.emplace(command, new_instance(desc));
+        sub_parsers_.emplace(command,
+                             std::make_unique<Parser>(gf_manager_, desc));
         max_command_len_ = std::max(max_command_len_, command.size());
         return *sub_parsers_[command];
     }
@@ -99,7 +97,7 @@ public:
               const std::string &desc,
               const std::optional<std::string> &default_val)
     {
-        if (gf_manager_.contain(full_name) || gf_manager_.contain(short_name))
+        if (gf_manager_->contain(full_name) || gf_manager_->contain(short_name))
         {
             std::cerr << "Flag registered failed: flag \"" << full_name
                       << "\", \"" << short_name
@@ -115,7 +113,7 @@ public:
               const std::string &short_name,
               const std::string &desc)
     {
-        if (gf_manager_.contain(full_name) || gf_manager_.contain(short_name))
+        if (gf_manager_->contain(full_name) || gf_manager_->contain(short_name))
         {
             std::cerr << "Flag registered failed: flag \"" << full_name
                       << "\", \"" << short_name
@@ -139,7 +137,7 @@ public:
                       << std::endl;
             return false;
         }
-        return gf_manager_.add_flag(
+        return gf_manager_->add_flag(
             flag, full_name, short_name, desc, std::nullopt, true);
     }
     template <typename T>
@@ -157,7 +155,7 @@ public:
                       << std::endl;
             return false;
         }
-        return gf_manager_.add_flag(
+        return gf_manager_->add_flag(
             flag, full_name, short_name, desc, default_val, false);
     }
     bool parse(int argc, const char *argv[])
@@ -174,7 +172,7 @@ private:
     std::string description_;
 
     flag::FlagManager::Pointer flag_manager_;
-    flag::FlagManager &gf_manager_;
+    flag::FlagManager::Pointer gf_manager_;
     std::unordered_map<std::string, Pointer> sub_parsers_;
     size_t max_command_len_{0};
 
@@ -238,8 +236,10 @@ private:
             }
 
             if (!flag_manager_->apply(key, value) &&
-                !gf_manager_.apply(key, value))
+                !gf_manager_->apply(key, value))
             {
+                std::cerr << "Failed to apply " << key << "=\"" << value
+                          << "\": Failure due to previous problem" << std::endl;
                 return false;
             }
         }
@@ -317,18 +317,30 @@ private:
         return ret;
     }
 };  // namespace argparser
+std::shared_ptr<Parser> new_parser(const std::string &desc = {})
+{
+    auto global_flag_manager = std::make_shared<flag::FlagManager>();
+    return std::make_shared<Parser>(global_flag_manager, desc);
+}
+
 Parser &init(const std::string &desc)
 {
-    static Parser::Pointer root_parser;
+    static std::shared_ptr<Parser> root_parser;
     if (root_parser == nullptr)
     {
-        root_parser = Parser::new_instance(desc);
+        root_parser = new_parser(desc);
     }
     return *root_parser;
 }
-std::shared_ptr<Parser> new_parser(const std::string &desc = {})
+namespace impl
 {
-    return std::make_shared<Parser>(desc);
+std::shared_ptr<Parser> new_parser(
+    std::shared_ptr<flag::FlagManager> global_flag_manager,
+    const std::string &desc = {})
+{
+    return std::make_shared<Parser>(global_flag_manager, desc);
 }
+
+}  // namespace impl
 }  // namespace argparser
 #endif

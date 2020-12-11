@@ -127,8 +127,6 @@ public:
                 return true;
             }
         }
-        std::cerr << "Failed to apply " << key << "=\"" << value << "\": "
-                  << "Flag not found" << std::endl;
         return false;
     }
     bool contain(const std::string name) const
@@ -216,13 +214,11 @@ private:
     {
         return registered_full_flags_.find(name) ==
                registered_full_flags_.end();
-        ;
     }
     bool unique_short_flag(const std::string &name) const
     {
         return registered_short_flags_.find(name) ==
                registered_short_flags_.end();
-        ;
     }
 
     std::set<std::string> registered_full_flags_;
@@ -236,21 +232,6 @@ private:
     size_t max_short_name_len_{0};
 };
 
-class GlobalFlagManager
-{
-public:
-    static FlagManager& instance()
-    {
-        static std::shared_ptr<FlagManager> global_flag_manager;
-        if (global_flag_manager == nullptr)
-        {
-            global_flag_manager = std::make_shared<FlagManager>();
-        }
-        return *global_flag_manager;
-    }
-    GlobalFlagManager() = delete;
-private:
-};
 }  // namespace flag
 }  // namespace argparser
 #endif
