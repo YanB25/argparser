@@ -53,6 +53,33 @@ TEST(ArgparserFlag, ParseInt64)
     EXPECT_EQ(i2, -5);
 }
 
+TEST(ArgparserFlag, ParseInt64ShouldFail)
+{
+    int64_t i = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
+    const char *arg[] = {"./argtest", "--int", "5abc"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+
+TEST(ArgparserFlag, ParseInt64ShouldFail2)
+{
+    int64_t i = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
+    const char *arg[] = {"./argtest", "--int", "5 abc"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+
+TEST(ArgparserFlag, ParseInt64ShouldFail3)
+{
+    int64_t i = 0;
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(&i, "--int", "-i", "number i"));
+    const char *arg[] = {"./argtest", "--int", "5 10"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+
 TEST(ArgparserFlag, ParseBigInt)
 {
     int64_t big_int;

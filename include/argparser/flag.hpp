@@ -99,7 +99,6 @@ private:
 template <typename T>
 std::istream &operator>>(std::istream &is, std::vector<T> &vec)
 {
-    std::cout << "!!!" << std::endl;
     std::string token;
     vec.clear();
     while (!is.eof())
@@ -121,7 +120,7 @@ bool ConcreteFlag<T>::apply_to(T *target, const std::string &value)
     }
     std::istringstream iss(value);
     iss >> *target;
-    return !iss.fail();
+    return iss.eof() && !iss.fail();
 }
 
 template <>
