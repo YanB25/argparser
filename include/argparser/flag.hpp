@@ -94,6 +94,10 @@ private:
 template <typename T>
 bool ConcreteFlag<T>::apply(const std::string &value)
 {
+    if (value.find(' ') != std::string::npos)
+    {
+        return false;
+    }
     std::istringstream iss(value);
     iss >> *flag_;
     return !iss.fail();
@@ -101,6 +105,11 @@ bool ConcreteFlag<T>::apply(const std::string &value)
 template <>
 bool ConcreteFlag<bool>::apply(const std::string &value)
 {
+    if (value.find(' ') != std::string::npos)
+    {
+        return false;
+    }
+    
     if (value.empty() || value == "1" || value == "true")
     {
         *flag_ = true;

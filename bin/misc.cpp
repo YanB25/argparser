@@ -152,6 +152,49 @@ TEST(ArgparserFlag, StringCanContainSpace)
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_STREQ(name.c_str(), content);
 }
+TEST(ArgparserFlag, CharStarNotAnArray)
+{
+    char buffer[1024] = {};
+    const char* content = "Hello world! It's a special long sentence.";
+    auto parser = argparser::new_parser("parse int");
+    EXPECT_TRUE(parser->flag(buffer, "--name", "-n", "The name"));
+    const char *arg[] = {"./argtest", "--name", content};
+    parser->parse(sizeof(arg) / sizeof(arg[0]), arg);
+    // we expect that only the first char is modified
+    // because `buffer` is char*.
+    for (size_t i = 1; i < 1024; ++i)
+    {
+        EXPECT_EQ(buffer[i], '\0');
+    }
+}
+
+TEST(ArgparserFlag, SpaceNotAllowIfItsNotString)
+{
+    int64_t i = 0;
+    const char* str_i = "-123 456";
+    auto parser = argparser::new_parser("");
+    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
+    const char *arg[] = {"./argtest", "--i", str_i};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+TEST(ArgparserFlag, SpaceNotAllowIfItsNotString2)
+{
+    uint64_t u = 0;
+    const char* str_u = "123 456";
+    auto parser = argparser::new_parser("");
+    EXPECT_TRUE(parser->flag(&u, "--u", "", ""));
+    const char *arg[] = {"./argtest", "--u", str_u};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+TEST(ArgparserFlag, SpaceNotAllowIfItsNotString3)
+{
+    bool b = false;
+    const char* str_b = "true 1";
+    auto parser = argparser::new_parser("");
+    EXPECT_TRUE(parser->flag(&b, "--b", "", ""));
+    const char *arg[] = {"./argtest", "--b", str_b};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
 
 int main(int argc, char **argv)
 {
