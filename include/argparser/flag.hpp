@@ -61,14 +61,16 @@ public:
     {
         return "{Flag " + full_name_ + ", " + short_name_ + "}";
     }
-    // TODO: must handle --name="abc def"
-    // TODO: can I handle array?
-    bool apply(const std::string &value) override;
+    bool apply(const std::string &value) override
+    {
+        return apply_to(flag_, value);
+    }
+    static bool apply_to(T *target, const std::string &value);
     bool apply_default() override
     {
         if (default_.has_value())
         {
-            return apply(default_.value());
+            return apply_to(flag_, default_.value());
         }
         return false;
     }
@@ -93,73 +95,37 @@ private:
     std::string desc_;
     std::optional<std::string> default_;
 };
-template <typename>
-struct is_std_vector : std::false_type
-{
-};
 
-template <typename T, typename A>
-struct is_std_vector<std::vector<T, A>> : std::true_type
-{
-};
-
-// TODO: delegate parsing vector to parsing T.
 template <typename T>
 std::istream &operator>>(std::istream &is, std::vector<T> &vec)
 {
+    std::cout << "!!!" << std::endl;
     std::string token;
     vec.clear();
     while (!is.eof())
     {
         std::getline(is, token, ',');
         T tmp;
-        std::istringstream iss(token);
-        iss >> tmp;
-        vec.push_back(tmp);
+        ConcreteFlag<T>::apply_to(&tmp, token);
+        vec.emplace_back(std::move(tmp));
     }
     return is;
 }
 
 template <typename T>
-bool ConcreteFlag<T>::apply(const std::string &value)
+bool ConcreteFlag<T>::apply_to(T *target, const std::string &value)
 {
     if (value.find(' ') != std::string::npos)
     {
         return false;
     }
     std::istringstream iss(value);
-    iss >> *flag_;
+    iss >> *target;
     return !iss.fail();
 }
 
-// template <typename T>
-// bool ConcreteFlag<T>::apply(const std::string &value)
-// {
-//     if constexpr (is_std_vector<T>::value)
-//     {
-//         auto splits = flag::split(value, ",");
-//         for (const auto& s: splits)
-//         {
-//             T tmp;
-//             std::istringstream iss(s);
-//             iss >> tmp;
-//             flag_->push_back(tmp);
-//         }
-//         return false;
-//     }
-//     else
-//     {
-//         if (value.find(' ') != std::string::npos)
-//         {
-//             return false;
-//         }
-//         std::istringstream iss(value);
-//         iss >> *flag_;
-//         return !iss.fail();
-//     }
-// }
 template <>
-bool ConcreteFlag<bool>::apply(const std::string &value)
+bool ConcreteFlag<bool>::apply_to(bool *target, const std::string &value)
 {
     if (value.find(' ') != std::string::npos)
     {
@@ -168,20 +134,21 @@ bool ConcreteFlag<bool>::apply(const std::string &value)
 
     if (value.empty() || value == "1" || value == "true")
     {
-        *flag_ = true;
+        *target = true;
         return true;
     }
     else if (value == "0" || value == "false")
     {
-        *flag_ = false;
+        *target = false;
         return true;
     }
     return false;
 }
 template <>
-bool ConcreteFlag<std::string>::apply(const std::string &value)
+bool ConcreteFlag<std::string>::apply_to(std::string *target,
+                                         const std::string &value)
 {
-    *flag_ = value;
+    *target = value;
     return true;
 }
 

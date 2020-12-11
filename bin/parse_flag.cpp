@@ -183,6 +183,52 @@ TEST(ArgparserFlag, ParseArray)
     }
 }
 
+TEST(ArgparserFlag, ParseAnyArray)
+{
+    std::vector<int64_t> iarrs;
+    std::vector<uint64_t> uarrs;
+    std::vector<double> darrs;
+    std::vector<bool> barrs;
+    auto parser = argparser::new_parser("parse bool");
+    EXPECT_TRUE(parser->flag(&iarrs, "--array-i", "-i", ""));
+    EXPECT_TRUE(parser->flag(&uarrs, "--array-u", "-u", ""));
+    EXPECT_TRUE(parser->flag(&darrs, "--array-d", "-d", ""));
+    EXPECT_TRUE(parser->flag(&barrs, "--array-b", "-b", ""));
+    const char *arg[] = {"./argtest",
+                         "-i",
+                         "1,-2,3,-4,5,-6,7,-8,9,-10",
+                         "-u",
+                         "1,2,3,4,5",
+                         "-d",
+                         "1.2,-3.4,5.6,-7.8",
+                         "-b",
+                         "true,false,1,0"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(iarrs.size(), 10);
+    for (int i = 0; i < 10; ++i)
+    {
+        EXPECT_EQ(iarrs[i], i % 2 == 0 ? i + 1 : -i - 1);
+    }
+    EXPECT_EQ(uarrs.size(), 5);
+    for (int i = 0; i < 5; ++i)
+    {
+        EXPECT_EQ(uarrs[i], i + 1);
+    }
+    EXPECT_EQ(darrs.size(), 4);
+    EXPECT_EQ(darrs[0], 1.2);
+    EXPECT_EQ(darrs[1], -3.4);
+    EXPECT_EQ(darrs[2], 5.6);
+    EXPECT_EQ(darrs[3], -7.8);
+    EXPECT_EQ(barrs.size(), 4);
+    EXPECT_EQ(barrs[0], true);
+    EXPECT_EQ(barrs[1], false);
+    EXPECT_EQ(barrs[2], true);
+    EXPECT_EQ(barrs[3], false);
+}
+
+// TODO:allow space in array?
+// TODO: if an item of array is wrong, can it fail?
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

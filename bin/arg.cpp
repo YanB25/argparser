@@ -53,12 +53,21 @@ int main(int argc, const char *argv[])
 #define EXPECT_FALSE(x) std::cout << "expect false: " << x << std::endl
 #define EXPECT_EQ(x, y)                           \
     {                                             \
-        std::cout << x << ", " << y << std::endl; \
+        std::cout << (x) << ", " << (y) << std::endl; \
     }
-    int64_t flag = 1;
-    auto parser = argparser::new_parser("");
-    // failed to register, default value "" not parsable
-    EXPECT_FALSE(parser->flag(&flag, "--f", "", "", ""));
-    const char *arg[] = {"./argtest", "--f", "5"};
-    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    std::vector<int64_t> iarrs;
+    std::vector<uint64_t> uarrs;
+    std::vector<double> darrs;
+    std::vector<bool> barrs;
+    auto parser = argparser::new_parser("parse bool");
+    EXPECT_TRUE(parser->flag(&barrs, "--array-b", "-b", ""));
+    const char *arg[] = {"./argtest",
+                         "-b",
+                         "true,false,1,0"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(barrs.size(), 4);
+    EXPECT_EQ(barrs[0], true);
+    EXPECT_EQ(barrs[1], false);
+    EXPECT_EQ(barrs[2], true);
+    EXPECT_EQ(barrs[3], false);
 }
