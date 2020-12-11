@@ -136,6 +136,64 @@ TEST(ArgparserCommand, SameCommandSameParser)
     EXPECT_EQ(i, 12345);
     EXPECT_EQ(j, 23456);
 }
+TEST(ArgparserCommand, RootCommandNotAcceptSubFlag)
+{
+    int64_t i;
+    uint64_t j;
+    auto parser = argparser::new_parser();
+    // failed to register, full-name flag does not follow --flag-name form
+    auto &sub_parser = parser->command("same");
+    EXPECT_TRUE(parser->flag(&i, "--i", "", "", "0"));
+    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", "", "0"));
+
+    const char *arg[] = {
+        "./argtest", "--j=23456"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+TEST(ArgparserCommand, RootCommandOnlyRequireRootFlag)
+{
+    int64_t i;
+    uint64_t j;
+    auto parser = argparser::new_parser();
+    // failed to register, full-name flag does not follow --flag-name form
+    auto &sub_parser = parser->command("same");
+    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
+    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
+
+    const char *arg[] = {
+        "./argtest", "--i=12345"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(i, 12345);
+}
+TEST(ArgparserCommand, SubCommandNotAcceptRootFlag)
+{
+    int64_t i;
+    uint64_t j;
+    auto parser = argparser::new_parser();
+    // failed to register, full-name flag does not follow --flag-name form
+    auto &sub_parser = parser->command("same");
+    EXPECT_TRUE(parser->flag(&i, "--i", "", "", "0"));
+    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", "", "0"));
+
+    const char *arg[] = {
+        "./argtest", "same", "--i=12345"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+TEST(ArgparserCommand, SubCommandOnlyRequireSubFlag)
+{
+    int64_t i;
+    uint64_t j;
+    auto parser = argparser::new_parser();
+    // failed to register, full-name flag does not follow --flag-name form
+    auto &sub_parser = parser->command("same");
+    EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
+    EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
+
+    const char *arg[] = {
+        "./argtest", "same", "--j=23456"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(j, 23456);
+}
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
