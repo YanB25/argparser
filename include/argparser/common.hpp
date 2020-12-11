@@ -35,6 +35,18 @@ std::vector<std::string> split(std::string str,
     return ret;
 }
 
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+{
+    os << "[";
+    for (const auto& item: vec)
+    {
+        os << item << ", ";
+    }
+    os << "]" << std::endl;
+    return os;
+}
+
 }  // namespace flag
 }  // namespace argparser
 #endif

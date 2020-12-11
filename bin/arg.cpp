@@ -18,34 +18,31 @@ std::string long_paragraph =
 
 int main(int argc, const char *argv[])
 {
-    auto &parser = argparser::init("Simple Commandline tool");
-    uint64_t time;
-    std::string name;
-    bool has_init = true;
-    uint64_t tired;
-    int64_t t2;
-    double d;
-    std::vector<int64_t> vec;
-    parser.flag(&time, "--time", "-t", long_paragraph, "4");
-    parser.flag(&d, "--d", "", "", "5.2");
-    parser.flag(&name, "--name", "-n", long_paragraph.substr(300), "default");
-    parser.flag(&has_init, "--init", "-i", long_paragraph.substr(500), "true");
-    parser.flag(&tired, "--tired", "", long_paragraph.substr(700), "4");
-    parser.flag(&t2, "--t2", "", long_paragraph.substr(700), "-1");
-    parser.flag(&vec, "--vec", "", "");
-    auto &start_parser =
-        parser.command("start", "start a node in a multi-node cluster");
-    start_parser.flag(&t2, "--test", "-t", long_paragraph.substr(500));
-    start_parser.command("tpcc", "start tpcc workload");
-    parser.parse(argc, argv);
-    parser.print_promt(argc, argv);
-    std::cout << "time is " << time << std::endl;
-    std::cout << "name is " << name << std::endl;
-    std::cout << "init is " << has_init << std::endl;
-    std::cout << "t2 is " << t2 << std::endl;
-    std::cout << "has_init is " << has_init << std::endl;
-    std::cout << "d is " << d << std::endl;
-    std::cout << "vec size is " << vec.size() << std::endl;
+    std::string str;
+    int64_t i64;
+    uint64_t u64;
+    bool b;
+    std::vector<int64_t> arr_int64;
+    std::vector<std::string> arr_str;
+    auto parser = argparser::new_parser("");
+    parser->flag(&str, "--string", "-s", "A String", "default");
+    parser->flag(&i64, "--int64", "-i", "An int 64", "0");
+    parser->flag(&u64, "--uint64", "-u", "An uint 64", "0");
+    parser->flag(&b, "--bool", "-b", "A bool", "false");
+    parser->flag(&arr_int64, "--array-int64", "", "An array of int64", "1,2,3,4,5");
+    parser->flag(&arr_str, "--array-str", "", "An array of string", "a,b,c,d,e");
+    
+    parser->parse(argc, argv);
+    parser->print_promt(argc, argv);
+
+    std::cout << "string: " << str << std::endl;
+    std::cout << "int64: " << i64 << std::endl;
+    std::cout << "uint64: " << u64 << std::endl;
+    std::cout << "bool: " << b << std::endl;
+
+    using argparser::flag::operator<<;
+    std::cout << "array-int64 " << arr_int64 << std::endl;
+    std::cout << "array-str " << arr_str << std::endl;
 }
 // int main(int argc, const char *argv[])
 // {
