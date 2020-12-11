@@ -204,6 +204,14 @@ TEST(ArgparserFlag, SpaceNotAllowIfItsNotString4)
     const char *arg[] = {"./argtest", "--d", str_d};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
+TEST(ArgparserFlag, FailedIfFlagProvidedTwice)
+{
+    int64_t flag = 1;
+    auto parser = argparser::new_parser("");
+    EXPECT_TRUE(parser->flag(&flag, "--f", "", ""));
+    const char *arg[] = {"./argtest", "--f", "5", "--f", "6"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
 
 int main(int argc, char **argv)
 {

@@ -32,8 +32,9 @@ public:
     {
         if (!is_full_flag(full_name) && !is_short_flag(short_name))
         {
-            std::cerr << "Failed to register flag " << full_name << ", " << short_name
-                      << ": Both flag formats are not allowed" << std::endl;
+            std::cerr << "Failed to register flag " << full_name << ", "
+                      << short_name << ": Both flag formats are not allowed"
+                      << std::endl;
             return false;
         }
         if (!full_name.empty() && !is_full_flag(full_name))
@@ -103,6 +104,15 @@ public:
             const auto &flag = flags_[i];
             if (flag->match(key))
             {
+                if (applied_[i])
+                {
+                    std::cerr << "Failed to apply " << key << "=\"" << value
+                              << "\": "
+                              << "Flag " << key
+                              << " already set and is provided more than once."
+                              << std::endl;
+                    return false;
+                }
                 if (!flag->apply(value))
                 {
                     std::cerr << "Failed to apply " << key << "=\"" << value
