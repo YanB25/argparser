@@ -30,39 +30,6 @@ public:
                   const std::optional<std::string> &default_val,
                   bool required)
     {
-        if (!is_full_flag(full_name) && !is_short_flag(short_name))
-        {
-            std::cerr << "Failed to register flag " << full_name << ", "
-                      << short_name << ": Both flag formats are not allowed"
-                      << std::endl;
-            return false;
-        }
-        if (!full_name.empty() && !is_full_flag(full_name))
-        {
-            std::cerr << "Failed to register flag " << full_name
-                      << ": identity not allowed" << std::endl;
-            return false;
-        }
-        if (!short_name.empty() && !is_short_flag(short_name))
-        {
-            std::cerr << "Failed to register flag " << short_name << "("
-                      << full_name << ")"
-                      << ": identity not allowed" << std::endl;
-            return false;
-        }
-        if (!unique_full_flag(full_name))
-        {
-            std::cerr << "Failed to register flag " << full_name
-                      << ": flag already registered" << std::endl;
-            return false;
-        }
-        if (!unique_short_flag(short_name))
-        {
-            std::cerr << "Failed to register flag " << short_name << "("
-                      << full_name << ")"
-                      << ": flag already registered" << std::endl;
-            return false;
-        }
         flags_.emplace_back(flag::ConcreteFlag<T>::make_flag(
             slot, full_name, short_name, desc, default_val));
         if (default_val.has_value())

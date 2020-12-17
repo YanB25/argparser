@@ -13,6 +13,8 @@
 #include "./common.hpp"
 #include "./debug.hpp"
 #include "./flag-manager.hpp"
+#include "./flag-store.hpp"
+#include "./flag-validator.hpp"
 namespace argparser
 {
 // TODO: unable to know the current command
@@ -26,7 +28,8 @@ public:
            const std::string &description)
         : description_(description),
           flag_manager_(flag::FlagManager::new_instance()),
-          gf_manager_(global_flag_manager)
+          gf_manager_(global_flag_manager),
+          validator_(gf_manager_)
     {
     }
     void print_promt() const
@@ -99,11 +102,8 @@ public:
               const std::string &desc,
               const std::optional<std::string> &default_val)
     {
-        if (gf_manager_->contain(full_name) || gf_manager_->contain(short_name))
+        if (!validator_.validate(full_name, short_name))
         {
-            std::cerr << "Flag registered failed: flag \"" << full_name
-                      << "\", \"" << short_name
-                      << "\" conflict with global flag" << std::endl;
             return false;
         }
         return flag_manager_->add_flag(
@@ -115,15 +115,79 @@ public:
               const std::string &short_name,
               const std::string &desc)
     {
-        if (gf_manager_->contain(full_name) || gf_manager_->contain(short_name))
+        if (!validator_.validate(full_name, short_name))
         {
-            std::cerr << "Flag registered failed: flag \"" << full_name
-                      << "\", \"" << short_name
-                      << "\" conflict with global flag" << std::endl;
             return false;
         }
         return flag_manager_->add_flag(
             flag, full_name, short_name, desc, std::nullopt, true);
+    }
+    /**
+     * This function register flag to the (default) global FlagStore.
+     * The user can later retrieve the flag via
+     * int result = FlagStore::instance().get("--flag").to<int>();
+     */
+    bool flag(const std::string &full_name,
+              const std::string &short_name,
+              const std::string &desc)
+    {
+        if (!validator_.validate(full_name, short_name))
+        {
+            return false;
+        }
+        using flag::FlagStore;
+        auto flag_store = FlagStore::global_instance();
+        auto cell = flag_store->reg(full_name, short_name);
+        return flag_manager_->add_flag(
+            &cell->raw(), full_name, short_name, desc, std::nullopt, true);
+    }
+    bool flag(const std::string &full_name,
+              const std::string &short_name,
+              const std::string &desc,
+              const std::optional<std::string> &default_val)
+    {
+        if (!validator_.validate(full_name, short_name))
+        {
+            return false;
+        }
+        using flag::FlagStore;
+        auto flag_store = FlagStore::global_instance();
+        auto cell = flag_store->reg(full_name, short_name);
+        return flag_manager_->add_flag(
+            &cell->raw(), full_name, short_name, desc, default_val, false);
+    }
+    /**
+     * This function register flag to the specified FlagStore.
+     * The user can later retrieve the flag via
+     * int result = flag_store->get("--flag").to<int>();
+     */
+    bool flag(flag::FlagStore::Pointer flag_store,
+              const std::string &full_name,
+              const std::string &short_name,
+              const std::string &desc)
+    {
+        if (!validator_.validate(full_name, short_name))
+        {
+            return false;
+        }
+        auto cell = flag_store->reg(full_name, short_name);
+        return flag_manager_->add_flag(
+            &cell->raw(), full_name, short_name, desc, std::nullopt, true);
+    }
+    bool flag(flag::FlagStore::Pointer flag_store,
+              const std::string &full_name,
+              const std::string &short_name,
+              const std::string &desc,
+              const std::optional<std::string> &default_val)
+    {
+        if (!validator_.validate(full_name, short_name))
+        {
+            return false;
+        }
+        visited_flag_stores_.insert(flag_store);
+        auto cell = flag_store->reg(full_name, short_name);
+        return flag_manager_->add_flag(
+            &cell->raw(), full_name, short_name, desc, default_val, false);
     }
     template <typename T>
     bool global_flag(T *flag,
@@ -131,12 +195,8 @@ public:
                      const std::string &short_name,
                      const std::string &desc)
     {
-        if (flag_manager_->contain(full_name) ||
-            flag_manager_->contain(short_name))
+        if (!validator_.validate(full_name, short_name))
         {
-            std::cerr << "Flag registered failed: flag \"" << full_name
-                      << "\", \"" << short_name << "\" conflict detected."
-                      << std::endl;
             return false;
         }
         return gf_manager_->add_flag(
@@ -149,12 +209,8 @@ public:
                      const std::string &desc,
                      const std::optional<std::string> &default_val)
     {
-        if (flag_manager_->contain(full_name) ||
-            flag_manager_->contain(short_name))
+        if (!validator_.validate(full_name, short_name))
         {
-            std::cerr << "Flag registered failed: flag \"" << full_name
-                      << "\", \"" << short_name << "\" conflict detected."
-                      << std::endl;
             return false;
         }
         return gf_manager_->add_flag(
@@ -183,7 +239,11 @@ private:
     std::unordered_map<std::string, Pointer> sub_parsers_;
     size_t max_command_len_{0};
 
+    flag::Validator validator_;
+
     std::vector<std::string> command_path_;
+
+    std::set<std::shared_ptr<flag::FlagStore>> visited_flag_stores_;
 
     void print_usage() const
     {
@@ -222,7 +282,7 @@ private:
             std::cout << std::endl;
         }
     }
-    bool do_parse(FlagPairs &pairs, std::vector<std::string>& command_path)
+    bool do_parse(FlagPairs &pairs, std::vector<std::string> &command_path)
     {
         init_ = true;
 

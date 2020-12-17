@@ -18,4 +18,8 @@ add_executable(global_flag global_flag.cpp)
 target_link_libraries(global_flag gtest_main argparser_obj)
 add_test(NAME global_flag COMMAND global_flag)
 
+add_executable(flag_store flag_store.cpp)
+target_link_libraries(flag_store gtest_main argparser_obj)
+add_test(NAME flag_store COMMAND flag_store)
+
 enable_testing()
