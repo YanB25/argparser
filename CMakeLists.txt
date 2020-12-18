@@ -48,7 +48,8 @@ if (${BUILD_STATIC_LIBS})
 
     # install instructions
     set_target_properties(argparser-static PROPERTIES PUBLIC_HEADER "${HELLOWORLD_PUBLIC_HEADER}")
-    install(TARGETS argparser-static PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/argparser)
+    install(TARGETS argparser-static PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/argparser
+        LIBRARY DESTINATION lib)
 endif()
 
 if (${BUILD_SHARED_LIBS})
@@ -56,5 +57,6 @@ if (${BUILD_SHARED_LIBS})
 
     # install instructions
     set_target_properties(argparser-dynamic PROPERTIES PUBLIC_HEADER "${HELLOWORLD_PUBLIC_HEADER}")
-    install(TARGETS argparser-dynamic PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/argparser)
+    install(TARGETS argparser-dynamic PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_PREFIX}/include/argparser 
+        LIBRARY DESTINATION lib)
 endif()
