@@ -3,6 +3,6 @@ install:
 - mkdir build
 - cd build
 - cmake ..
-- make -j
+- make VERBOSE=1 -j
 script:
 - make test
