@@ -16,8 +16,6 @@
 #include "./flag-validator.hpp"
 namespace argparser
 {
-// TODO: unable to know the current command
-
 class Parser;
 class ParserStore
 {

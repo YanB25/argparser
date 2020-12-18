@@ -108,7 +108,6 @@ public:
     template <typename T>
     T to() const
     {
-        // TODO: should be extandable
         return argparse::convert::to<T>(inner_);
     }
     template <typename T>

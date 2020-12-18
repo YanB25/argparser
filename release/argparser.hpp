@@ -315,7 +315,6 @@ public:
     template <typename T>
     T to() const
     {
-        // TODO: should be extandable
         return argparse::convert::to<T>(inner_);
     }
     template <typename T>
@@ -742,7 +741,6 @@ private:
 #endif
 namespace argparser
 {
-// TODO: unable to know the current command
 
 class Parser;
 class ParserStore
