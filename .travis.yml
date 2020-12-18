@@ -8,6 +8,10 @@ dist: bionic
 
 osx_image: xcode12.2
 
+compiler:
+  - clang
+  - g++
+
 addons:
   apt:
     packages: 
