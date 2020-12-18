@@ -35,8 +35,13 @@ int main(int argc, const char *argv[])
         parser.command("run", "A sub-command, used to run something");
     run_parser.flag(&time, "--time", "-T", "The time to run", "5");
 
-    parser.parse(argc, argv);
-    parser.print_promt(argc, argv);
+    // DO check the success status of this function
+    // and print messages when fails.
+    if (!parser.parse(argc, argv))
+    {
+        parser.print_promt(argc, argv);
+        return 0;
+    }
     return 0;
 }
 ```
