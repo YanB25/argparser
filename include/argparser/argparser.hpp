@@ -122,7 +122,7 @@ public:
             flag, full_name, short_name, desc, std::nullopt, true);
     }
     /**
-     * This function register flag to the (default) global FlagStore.
+     * This function register flag to the internal FlagStore.
      * The user can later retrieve the flag via
      * int result = FlagStore::instance().get("--flag").to<int>();
      */
@@ -176,6 +176,34 @@ public:
         return gf_store_->add_flag(
             flag, full_name, short_name, desc, default_val, false);
     }
+    /**
+     * This function register flag to the internal FlagStore.
+     * The user can later retrieve the flag via
+     * int result = FlagStore::instance().get("--flag").to<int>();
+     */
+    bool global_flag(const std::string &full_name,
+                     const std::string &short_name,
+                     const std::string &desc)
+    {
+        if (!validator_.validate(full_name, short_name))
+        {
+            return false;
+        }
+        return gf_store_->add_flag(
+            full_name, short_name, desc, std::nullopt, true);
+    }
+    bool global_flag(const std::string &full_name,
+                     const std::string &short_name,
+                     const std::string &desc,
+                     const std::optional<std::string> &default_val)
+    {
+        if (!validator_.validate(full_name, short_name))
+        {
+            return false;
+        }
+        return gf_store_->add_flag(
+            full_name, short_name, desc, default_val, false);
+    }
     bool parse(int argc, const char *argv[])
     {
         command_path_.clear();
@@ -188,13 +216,17 @@ public:
     {
         return command_path_;
     }
-    const flag::AllocatedFlag& get(const std::string& name) const
+    const flag::AllocatedFlag &get(const std::string &name) const
     {
-        return flag_store_->get(name);
+        if (flag_store_->has(name))
+        {
+            return flag_store_->get(name);
+        }
+        return gf_store_->get(name);
     }
-    bool has(const std::string& name) const
+    bool has(const std::string &name) const
     {
-        return flag_store_->has(name);
+        return flag_store_->has(name) || gf_store_->has(name);
     }
 
 private:
