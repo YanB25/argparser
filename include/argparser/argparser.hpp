@@ -12,7 +12,7 @@
 
 #include "./common.hpp"
 #include "./debug.hpp"
-#include "./flag-manager.hpp"
+#include "./flag-store.hpp"
 #include "./flag-validator.hpp"
 namespace argparser
 {
@@ -23,12 +23,12 @@ public:
     using Pointer = std::unique_ptr<Parser>;
     using FlagPair = std::pair<std::string, std::string>;
     using FlagPairs = std::list<FlagPair>;
-    Parser(std::shared_ptr<flag::FlagManager> global_flag_manager,
+    Parser(std::shared_ptr<flag::FlagStore> global_flag_store,
            const std::string &description)
         : description_(description),
-          flag_manager_(flag::FlagManager::new_instance()),
-          gf_manager_(global_flag_manager),
-          validator_(gf_manager_)
+          flag_store_(flag::FlagStore::new_instance()),
+          gf_store_(global_flag_store),
+          validator_(gf_store_)
     {
     }
     void print_promt() const
@@ -42,8 +42,8 @@ public:
 
         print_usage();
         print_command();
-        flag_manager_->print_flags();
-        gf_manager_->print_flags("Global Flag");
+        flag_store_->print_flags();
+        gf_store_->print_flags("Global Flag");
     }
     void print_promt(FlagPairs &pairs) const
     {
@@ -52,7 +52,7 @@ public:
             const auto &key = it->first;
             if (flag::is_flag(key))
             {
-                if (flag_manager_->contain(key))
+                if (flag_store_->contain(key))
                 {
                     // this flag is expected, we can keep going.
                     continue;
@@ -89,7 +89,7 @@ public:
     Parser &command(const std::string &command, const std::string &desc = {})
     {
         sub_parsers_.emplace(command,
-                             std::make_unique<Parser>(gf_manager_, desc));
+                             std::make_unique<Parser>(gf_store_, desc));
         max_command_len_ = std::max(max_command_len_, command.size());
         return *sub_parsers_[command];
     }
@@ -105,7 +105,7 @@ public:
         {
             return false;
         }
-        return flag_manager_->add_flag(
+        return flag_store_->add_flag(
             flag, full_name, short_name, desc, default_val, false);
     }
     template <typename T>
@@ -118,7 +118,7 @@ public:
         {
             return false;
         }
-        return flag_manager_->add_flag(
+        return flag_store_->add_flag(
             flag, full_name, short_name, desc, std::nullopt, true);
     }
     /**
@@ -134,7 +134,7 @@ public:
         {
             return false;
         }
-        return flag_manager_->add_flag(
+        return flag_store_->add_flag(
             full_name, short_name, desc, std::nullopt, true);
     }
     bool flag(const std::string &full_name,
@@ -146,7 +146,7 @@ public:
         {
             return false;
         }
-        return flag_manager_->add_flag(
+        return flag_store_->add_flag(
             full_name, short_name, desc, default_val, false);
     }
     template <typename T>
@@ -159,7 +159,7 @@ public:
         {
             return false;
         }
-        return gf_manager_->add_flag(
+        return gf_store_->add_flag(
             flag, full_name, short_name, desc, std::nullopt, true);
     }
     template <typename T>
@@ -173,7 +173,7 @@ public:
         {
             return false;
         }
-        return gf_manager_->add_flag(
+        return gf_store_->add_flag(
             flag, full_name, short_name, desc, default_val, false);
     }
     bool parse(int argc, const char *argv[])
@@ -190,7 +190,7 @@ public:
     }
     const flag::AllocatedFlag& get(const std::string& name) const
     {
-        return flag_manager_->get(name);
+        return flag_store_->get(name);
     }
 
 private:
@@ -198,8 +198,8 @@ private:
     std::string program_name;
     std::string description_;
 
-    flag::FlagManager::Pointer flag_manager_;
-    flag::FlagManager::Pointer gf_manager_;
+    flag::FlagStore::Pointer flag_store_;
+    flag::FlagStore::Pointer gf_store_;
     std::unordered_map<std::string, Pointer> sub_parsers_;
     size_t max_command_len_{0};
 
@@ -209,7 +209,7 @@ private:
 
     void print_usage() const
     {
-        if (!flag_manager_->empty() || !sub_parsers_.empty())
+        if (!flag_store_->empty() || !sub_parsers_.empty())
         {
             std::cout << "Usage:" << std::endl;
         }
@@ -218,17 +218,17 @@ private:
             std::cout << std::string(8, ' ') << program_name << " [command]"
                       << std::endl;
         }
-        if (!flag_manager_->empty())
+        if (!flag_store_->empty())
             std::cout << std::string(8, ' ') << program_name << " [flag]"
                       << std::endl;
-        if (!flag_manager_->empty() || !sub_parsers_.empty())
+        if (!flag_store_->empty() || !sub_parsers_.empty())
         {
             std::cout << std::endl;
         }
     }
-    const flag::FlagManager::Pointer flag_manager() const
+    const flag::FlagStore::Pointer flag_store() const
     {
-        return flag_manager_;
+        return flag_store_;
     }
     void print_command() const
     {
@@ -277,8 +277,8 @@ private:
                 return sub_parser->do_parse(pairs, command_path);
             }
 
-            if (!flag_manager_->apply(key, value) &&
-                !gf_manager_->apply(key, value))
+            if (!flag_store_->apply(key, value) &&
+                !gf_store_->apply(key, value))
             {
                 std::cerr << "Failed to apply " << key << "=\"" << value
                           << "\": Failure due to previous problem" << std::endl;
@@ -286,7 +286,7 @@ private:
             }
         }
 
-        auto missing_keys = flag_manager_->missing_keys();
+        auto missing_keys = flag_store_->missing_keys();
         if (!missing_keys.empty())
         {
             std::cerr << "Failed to parse command line: [";
@@ -361,8 +361,8 @@ private:
 };  // namespace argparser
 std::shared_ptr<Parser> new_parser(const std::string &desc = {})
 {
-    auto global_flag_manager = std::make_shared<flag::FlagManager>();
-    return std::make_shared<Parser>(global_flag_manager, desc);
+    auto global_flag_store = std::make_shared<flag::FlagStore>();
+    return std::make_shared<Parser>(global_flag_store, desc);
 }
 
 Parser &init(const std::string &desc)
@@ -377,10 +377,10 @@ Parser &init(const std::string &desc)
 namespace impl
 {
 std::shared_ptr<Parser> new_parser(
-    std::shared_ptr<flag::FlagManager> global_flag_manager,
+    std::shared_ptr<flag::FlagStore> global_flag_store,
     const std::string &desc = {})
 {
-    return std::make_shared<Parser>(global_flag_manager, desc);
+    return std::make_shared<Parser>(global_flag_store, desc);
 }
 
 }  // namespace impl

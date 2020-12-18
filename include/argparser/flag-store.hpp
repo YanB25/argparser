@@ -15,17 +15,17 @@ namespace argparser
 {
 namespace flag
 {
-class FlagManager
+class FlagStore
 {
     using Required = bool;
     using Applied = bool;
     using Meta = std::pair<Required, Applied>;
 
 public:
-    using Pointer = std::shared_ptr<FlagManager>;
+    using Pointer = std::shared_ptr<FlagStore>;
     static Pointer new_instance()
     {
-        return std::make_unique<FlagManager>();
+        return std::make_unique<FlagStore>();
     }
     template <typename T>
     bool add_flag(T *slot,
@@ -289,9 +289,9 @@ public:
         std::cout << std::endl;
     }
 
-    FlagManager() = default;
+    FlagStore() = default;
 
-    ~FlagManager() = default;
+    ~FlagStore() = default;
 
 private:
     // FlagLine = {pointer, {bool, bool}}

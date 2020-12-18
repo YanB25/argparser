@@ -5,7 +5,7 @@
 #include <string>
 
 #include "./common.hpp"
-#include "./flag-manager.hpp"
+#include "./flag-store.hpp"
 namespace argparser
 {
 namespace flag
@@ -13,7 +13,7 @@ namespace flag
 class Validator
 {
 public:
-    Validator(flag::FlagManager::Pointer gf_manager) : gf_manager_(gf_manager)
+    Validator(flag::FlagStore::Pointer gf_store) : gf_store_(gf_store)
     {
     }
     bool validate(const std::string &full_name, const std::string &short_name)
@@ -51,7 +51,7 @@ public:
                       << ": flag already registered" << std::endl;
             return false;
         }
-        if (gf_manager_->contain(full_name) || gf_manager_->contain(short_name))
+        if (gf_store_->contain(full_name) || gf_store_->contain(short_name))
         {
             std::cerr << "Flag registered failed: flag \"" << full_name
                       << "\", \"" << short_name
@@ -80,7 +80,7 @@ public:
 private:
     std::set<std::string> inserted_full_names_;
     std::set<std::string> inserted_short_names_;
-    flag::FlagManager::Pointer gf_manager_;
+    flag::FlagStore::Pointer gf_store_;
 };
 }  // namespace flag
 }  // namespace argparser
