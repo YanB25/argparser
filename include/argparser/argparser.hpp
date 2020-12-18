@@ -86,7 +86,7 @@ public:
     {
         return description_;
     }
-    Parser &command(const std::string &command, const char* desc = {})
+    Parser &command(const std::string &command, const char* desc = "")
     {
         sub_parsers_.emplace(command,
                              std::make_unique<Parser>(gf_store_, desc));
@@ -395,7 +395,7 @@ private:
         return ret;
     }
 };  // namespace argparser
-std::shared_ptr<Parser> new_parser(const char* desc = {})
+std::shared_ptr<Parser> new_parser(const char* desc = "")
 {
     auto global_flag_store = std::make_shared<flag::FlagStore>();
     return std::make_shared<Parser>(global_flag_store, desc);
@@ -414,7 +414,7 @@ namespace impl
 {
 std::shared_ptr<Parser> new_parser(
     std::shared_ptr<flag::FlagStore> global_flag_store,
-    const char* desc = {})
+    const char* desc = "")
 {
     return std::make_shared<Parser>(global_flag_store, desc);
 }
