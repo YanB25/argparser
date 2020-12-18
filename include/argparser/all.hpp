@@ -4,6 +4,7 @@
 #include <string>
 
 #include "./argparser.hpp"
+#include "./convert.hpp"
 
 namespace argparser
 {
