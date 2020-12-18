@@ -48,8 +48,8 @@ $./helloworld
 A Hello-world Command-line Tool
 
 Usage:
-        ./bin/helloworld [command]
-        ./bin/helloworld [flag]
+        ./examples/helloworld [command]
+        ./examples/helloworld [flag]
 
 Available Commands:
   run     A sub-command, used to run something
@@ -66,7 +66,7 @@ The magic of the lib is that the command-line arguments are validated, parsed an
 
 To provide a flag, use either `--flag value` or `--flag=value`.
 
-See `bin/helloworld.cpp` for the source codes of the above example. `bin/*.cpp` are other examples for you to play around.
+See [examples/helloworld.cpp](examples/helloworld.cpp) for the source codes of the above example. `examples/*.cpp` are other examples for you to play around.
 
 ## Concept
 
@@ -301,7 +301,7 @@ All the necessary files are in `include/argparser`. A `cp` will work.
 After build,
 
 ``` bash
-$ ./bin/arg
+$ ./examples/arg
 ```
 
 is a more interesting program to play around.

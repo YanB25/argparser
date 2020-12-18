@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12.4)
 
 project (argparser)
 
-option(BUILD_BINARIES "Build the binaries in {project}/bin directory" ON)
+option(BUILD_EXAMPLES "Build the examples in {project}/examples directory" ON)
 option(BUILD_UNITTEST "Build the unittest in {project}/test directory" ON)
 option(BUILD_STATIC_LIBS "Build the static library" ON)
 option(BUILD_SHARED_LIBS "Build the shared library" ON)
@@ -34,8 +34,8 @@ file(GLOB_RECURSE HELLOWORLD_SOURCE src/*)
 add_library(argparser_obj OBJECT ${HELLOWORLD_SOURCE})
 target_include_directories(argparser_obj PUBLIC ${HELLOWORLD_INCLUDE_DIRECTORIES})
 
-if (${BUILD_BINARIES})
-    add_subdirectory(bin)
+if (${BUILD_EXAMPLES})
+    add_subdirectory(examples)
 endif()
 
 if (${BUILD_UNITTEST})
