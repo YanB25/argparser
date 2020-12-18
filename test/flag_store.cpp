@@ -30,14 +30,15 @@ TEST(ArgparserFlagStore, ParseInt)
                          "--negative",
                          "-21"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("--int"));
-    ASSERT_TRUE(parser->has("--zero"));
-    ASSERT_TRUE(parser->has("--positive"));
-    ASSERT_TRUE(parser->has("--negative"));
-    auto &pi = parser->get("--int");
-    auto &pz = parser->get("--zero");
-    auto &pp = parser->get("--positive");
-    auto &pn = parser->get("--negative");
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--int"));
+    ASSERT_TRUE(store.has("--zero"));
+    ASSERT_TRUE(store.has("--positive"));
+    ASSERT_TRUE(store.has("--negative"));
+    auto &pi = store.get("--int");
+    auto &pz = store.get("--zero");
+    auto &pp = store.get("--positive");
+    auto &pn = store.get("--negative");
     EXPECT_STREQ(pi.inner().c_str(), "5");
     EXPECT_EQ(pi.to<int>(), 5);
     EXPECT_STREQ(pz.inner().c_str(), "0");
@@ -56,10 +57,11 @@ TEST(ArgparserFlagStore, ParseInt64)
     const char *arg[] = {"./argtest", "--int", "5", "--int2", "-5"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    ASSERT_TRUE(parser->has("--int"));
-    ASSERT_TRUE(parser->has("--int2"));
-    auto i = parser->get("--int");
-    auto i2 = parser->get("--int2");
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--int"));
+    ASSERT_TRUE(store.has("--int2"));
+    auto i = store.get("--int");
+    auto i2 = store.get("--int2");
     EXPECT_STREQ(i.inner().c_str(), "5");
     EXPECT_EQ(i.to<int64_t>(), 5);
     EXPECT_STREQ(i2.inner().c_str(), "-5");
@@ -72,9 +74,11 @@ TEST(ArgparserFlagStore, ParseInt64ShouldFailForChar)
     EXPECT_TRUE(parser->flag("--int", "-i", "number i"));
     const char *arg[] = {"./argtest", "--int", "5abc"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("--int"));
-    ASSERT_TRUE(parser->has("-i"));
-    auto i = parser->get("--int");
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--int"));
+    ASSERT_TRUE(store.has("-i"));
+    auto i = store.get("--int");
     EXPECT_FALSE(i.convertable_to<int64_t>());
 }
 
@@ -84,9 +88,11 @@ TEST(ArgparserFlagStore, ParseInt64ShouldFailForSpace)
     EXPECT_TRUE(parser->flag("--int", "-i", "number i"));
     const char *arg[] = {"./argtest", "--int", "5 abc"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("--int"));
-    ASSERT_TRUE(parser->has("-i"));
-    auto i = parser->get("--int");
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--int"));
+    ASSERT_TRUE(store.has("-i"));
+    auto i = store.get("--int");
 
     EXPECT_FALSE(i.convertable_to<int64_t>());
 }
@@ -97,9 +103,11 @@ TEST(ArgparserFlagStore, ParseInt64ShouldFailForSpace2)
     EXPECT_TRUE(parser->flag("--int", "-i", "number i"));
     const char *arg[] = {"./argtest", "--int", "5 10"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("--int"));
-    ASSERT_TRUE(parser->has("-i"));
-    auto i = parser->get("--int");
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--int"));
+    ASSERT_TRUE(store.has("-i"));
+    auto i = store.get("--int");
 
     EXPECT_FALSE(i.convertable_to<int64_t>());
 }
@@ -131,12 +139,14 @@ TEST(ArgparserFlagStore, ParseBigInt)
                          "--big-int-m-1",
                          int_m1_str.c_str()};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("--big-int"));
-    ASSERT_TRUE(parser->has("--big-int-p-1"));
-    ASSERT_TRUE(parser->has("--big-int-m-1"));
-    auto big_i = parser->get("--big-int");
-    auto big_pi = parser->get("--big-int-p-1");
-    auto big_mi = parser->get("--big-int-m-1");
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--big-int"));
+    ASSERT_TRUE(store.has("--big-int-p-1"));
+    ASSERT_TRUE(store.has("--big-int-m-1"));
+    auto big_i = store.get("--big-int");
+    auto big_pi = store.get("--big-int-p-1");
+    auto big_mi = store.get("--big-int-m-1");
     EXPECT_EQ(big_i.to<int64_t>(), expect);
     EXPECT_EQ(big_pi.to<int64_t>(), expect_p1);
     EXPECT_EQ(big_mi.to<int64_t>(), expect_m1);
@@ -163,10 +173,12 @@ TEST(ArgparserFlagStore, ParseUnInt)
                          "--unsigned-big-int",
                          expect_u_big_i_str.c_str()};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("-u"));
-    ASSERT_TRUE(parser->has("-b"));
-    auto u_i = parser->get("-u");
-    auto big_ui = parser->get("-b");
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("-u"));
+    ASSERT_TRUE(store.has("-b"));
+    auto u_i = store.get("-u");
+    auto big_ui = store.get("-b");
     EXPECT_EQ(u_i.to<uint64_t>(), expect_ui);
     EXPECT_EQ(big_ui.to<uint64_t>(), expect_u_big_i);
     EXPECT_STREQ(u_i.inner().c_str(), std::to_string(expect_ui).c_str());
@@ -191,14 +203,16 @@ TEST(ArgparserFlagStore, ParseBool)
                          "--zero",
                          "0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("--tr"));
-    ASSERT_TRUE(parser->has("--fa"));
-    ASSERT_TRUE(parser->has("--one"));
-    ASSERT_TRUE(parser->has("--zero"));
-    auto t = parser->get("--tr");
-    auto f = parser->get("--fa");
-    auto one = parser->get("--one");
-    auto zero = parser->get("--zero");
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--tr"));
+    ASSERT_TRUE(store.has("--fa"));
+    ASSERT_TRUE(store.has("--one"));
+    ASSERT_TRUE(store.has("--zero"));
+    auto t = store.get("--tr");
+    auto f = store.get("--fa");
+    auto one = store.get("--one");
+    auto zero = store.get("--zero");
     EXPECT_STREQ(t.inner().c_str(), "true");
     EXPECT_STREQ(f.inner().c_str(), "false");
     EXPECT_STREQ(one.inner().c_str(), "1");
@@ -225,14 +239,16 @@ TEST(ArgparserFlagStore, ParseDouble)
                          "--d4",
                          "-1e6"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("--d1"));
-    ASSERT_TRUE(parser->has("--d2"));
-    ASSERT_TRUE(parser->has("--d3"));
-    ASSERT_TRUE(parser->has("--d4"));
-    auto d1 = parser->get("--d1");
-    auto d2 = parser->get("--d2");
-    auto d3 = parser->get("--d3");
-    auto d4 = parser->get("--d4");
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--d1"));
+    ASSERT_TRUE(store.has("--d2"));
+    ASSERT_TRUE(store.has("--d3"));
+    ASSERT_TRUE(store.has("--d4"));
+    auto d1 = store.get("--d1");
+    auto d2 = store.get("--d2");
+    auto d3 = store.get("--d3");
+    auto d4 = store.get("--d4");
     EXPECT_STREQ(d1.inner().c_str(), "314.564");
     EXPECT_STREQ(d2.inner().c_str(), "-423.523");
     EXPECT_STREQ(d3.inner().c_str(), "1e8");
@@ -250,8 +266,9 @@ TEST(ArgparserFlagStore, ParseArray)
     const char *arg[] = {"./argtest", "--array", "1,2,3,4,5,6,7,8,9,10"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    ASSERT_TRUE(parser->has("--array"));
-    auto arr = parser->get("--array");
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--array"));
+    auto arr = store.get("--array");
     EXPECT_STREQ(arr.inner().c_str(), "1,2,3,4,5,6,7,8,9,10");
 
     auto arrs = arr.to<std::vector<int64_t>>();
@@ -273,8 +290,9 @@ TEST(ArgparserFlagStore, ParseStringArray)
         "./argtest", "--array", "hello,world,my,name,is,LiHua."};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    ASSERT_TRUE(parser->has("--array"));
-    auto arr = parser->get("--array");
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--array"));
+    auto arr = store.get("--array");
     EXPECT_STREQ(arr.inner().c_str(), "hello,world,my,name,is,LiHua.");
 
     auto arrs = arr.to<std::vector<std::string>>();
@@ -294,8 +312,9 @@ TEST(ArgparserFlagStore, ParseStringWithComma)
     const char *arg[] = {"./argtest", "--str", expected.c_str()};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    ASSERT_TRUE(parser->has("--str"));
-    auto str = parser->get("--str");
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--str"));
+    auto str = store.get("--str");
     EXPECT_STREQ(str.inner().c_str(), expected.c_str());
 
     auto same_str = str.to<std::string>();
@@ -321,17 +340,18 @@ TEST(ArgparserFlagStore, ParseAnyArray)
                          "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    ASSERT_TRUE(parser->has("-i"));
-    ASSERT_TRUE(parser->has("-u"));
-    ASSERT_TRUE(parser->has("-d"));
-    ASSERT_TRUE(parser->has("-b"));
-    auto i = parser->get("-i");
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("-i"));
+    ASSERT_TRUE(store.has("-u"));
+    ASSERT_TRUE(store.has("-d"));
+    ASSERT_TRUE(store.has("-b"));
+    auto i = store.get("-i");
     EXPECT_STREQ(i.inner().c_str(), "1,-2,3,-4,5,-6,7,-8,9,-10");
-    auto u = parser->get("-u");
+    auto u = store.get("-u");
     EXPECT_STREQ(u.inner().c_str(), "1,2,3,4,5");
-    auto d = parser->get("-d");
+    auto d = store.get("-d");
     EXPECT_STREQ(d.inner().c_str(), "1.2,-3.4,5.6,-7.8");
-    auto b = parser->get("-b");
+    auto b = store.get("-b");
     EXPECT_STREQ(b.inner().c_str(), "true,false,1,0");
 
     auto iarrs = i.to<std::vector<int>>();
@@ -384,8 +404,10 @@ TEST(ArgparserFlagStore, ParseArrayFailedAtMiddle)
         "--array", "-a", "An array that has wrong middle elements"));
     const char *arg[] = {"./argtest", "-a", "1,2,t,4"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    EXPECT_FALSE(parser->get("--array").convertable_to<std::vector<int>>());
-    EXPECT_FALSE(parser->get("-a").convertable_to<std::vector<int>>());
+
+    auto& store = parser->store();
+    EXPECT_FALSE(store.get("--array").convertable_to<std::vector<int>>());
+    EXPECT_FALSE(store.get("-a").convertable_to<std::vector<int>>());
 }
 TEST(ArgparserFlagStore, ParseArrayFailedAtMiddle2)
 {
@@ -395,8 +417,10 @@ TEST(ArgparserFlagStore, ParseArrayFailedAtMiddle2)
     // 2 is also not valid
     const char *arg[] = {"./argtest", "-a", "true,false,2,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    EXPECT_FALSE(parser->get("--array").convertable_to<std::vector<bool>>());
-    EXPECT_FALSE(parser->get("-a").convertable_to<std::vector<bool>>());
+
+    auto& store = parser->store();
+    EXPECT_FALSE(store.get("--array").convertable_to<std::vector<bool>>());
+    EXPECT_FALSE(store.get("-a").convertable_to<std::vector<bool>>());
 }
 TEST(ArgparserFlagStore, ParseHas)
 {
@@ -407,12 +431,13 @@ TEST(ArgparserFlagStore, ParseHas)
     const char *arg[] = {"./argtest", "-a", "true,false,2,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    EXPECT_TRUE(parser->has("--array"));
-    EXPECT_TRUE(parser->has("-a"));
-    EXPECT_FALSE(parser->has("--a"));
-    EXPECT_FALSE(parser->has("-array"));
-    EXPECT_FALSE(parser->has(""));
-    EXPECT_FALSE(parser->has(" "));
+    auto& store = parser->store();
+    EXPECT_TRUE(store.has("--array"));
+    EXPECT_TRUE(store.has("-a"));
+    EXPECT_FALSE(store.has("--a"));
+    EXPECT_FALSE(store.has("-array"));
+    EXPECT_FALSE(store.has(""));
+    EXPECT_FALSE(store.has(" "));
 }
 TEST(ArgparserFlagStore, AllocatedFlagCanNotConflict)
 {
@@ -425,10 +450,10 @@ TEST(ArgparserFlagStore, AllocatedFlagCanNotConflict)
     const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    // TODO: should use parser->store() to get the store.
 
-    EXPECT_FALSE(parser->has("--array"));
-    EXPECT_FALSE(parser->has("-a"));
+    auto& store = parser->store();
+    EXPECT_FALSE(store.has("--array"));
+    EXPECT_FALSE(store.has("-a"));
 
     EXPECT_EQ(barrs.size(), 4);
     EXPECT_EQ(barrs[0], true);
@@ -447,10 +472,9 @@ TEST(ArgparserFlagStore, AllocatedFlagCanNotConflictGlobal)
     const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    // TODO: should use parser->store() to get the store.
-
-    EXPECT_FALSE(parser->has("--array"));
-    EXPECT_FALSE(parser->has("-a"));
+    auto& store = parser->store();
+    EXPECT_FALSE(store.has("--array"));
+    EXPECT_FALSE(store.has("-a"));
 
     EXPECT_EQ(barrs.size(), 4);
     EXPECT_EQ(barrs[0], true);
@@ -470,11 +494,11 @@ TEST(ArgparserFlagStore, AllocatedFlagCanNotConflict2)
     const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    // TODO: should use parser->store() to get the store.
-    ASSERT_TRUE(parser->has("--array"));
-    ASSERT_TRUE(parser->has("-a"));
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--array"));
+    ASSERT_TRUE(store.has("-a"));
 
-    auto barrs = parser->get("--array").to<std::vector<bool>>();
+    auto barrs = store.get("--array").to<std::vector<bool>>();
 
     EXPECT_EQ(barrs.size(), 4);
     EXPECT_EQ(barrs[0], true);
@@ -493,11 +517,11 @@ TEST(ArgparserFlagStore, AllocatedFlagCanNotConflictGlobal2)
     const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    // TODO: should use parser->store() to get the store.
-    ASSERT_TRUE(parser->has("--array"));
-    ASSERT_TRUE(parser->has("-a"));
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--array"));
+    ASSERT_TRUE(store.has("-a"));
 
-    auto barrs = parser->get("--array").to<std::vector<bool>>();
+    auto barrs = store.get("--array").to<std::vector<bool>>();
 
     EXPECT_EQ(barrs.size(), 4);
     EXPECT_EQ(barrs[0], true);
@@ -517,12 +541,12 @@ TEST(ArgparserFlagStore, AllocatedFlagCanBeGlobal)
     const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    // TODO: should use parser->store() to get the store.
 
-    ASSERT_TRUE(parser->has("--array"));
-    ASSERT_TRUE(parser->has("-a"));
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--array"));
+    ASSERT_TRUE(store.has("-a"));
 
-    auto barrs = parser->get("--array").to<std::vector<bool>>();
+    auto barrs = store.get("--array").to<std::vector<bool>>();
 
     EXPECT_EQ(barrs.size(), 4);
     EXPECT_EQ(barrs[0], true);
@@ -541,8 +565,9 @@ TEST(ArgparserFlagStore, AllocatedFlagCanBeGlobal2)
     const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    EXPECT_FALSE(parser->has("--array"));
-    EXPECT_FALSE(parser->has("-a"));
+    auto& store = parser->store();
+    EXPECT_FALSE(store.has("--array"));
+    EXPECT_FALSE(store.has("-a"));
 
     EXPECT_EQ(barrs.size(), 4);
     EXPECT_EQ(barrs[0], true);
@@ -561,8 +586,9 @@ TEST(ArgparserFlagStore, AllocatedFlagCanBeGlobalAndConflictNotAllowed)
     const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    EXPECT_FALSE(parser->has("--array"));
-    EXPECT_FALSE(parser->has("-a"));
+    auto& store = parser->store();
+    EXPECT_FALSE(store.has("--array"));
+    EXPECT_FALSE(store.has("-a"));
 
     EXPECT_EQ(barrs.size(), 4);
     EXPECT_EQ(barrs[0], true);
@@ -581,10 +607,11 @@ TEST(ArgparserFlagStore, AllocatedFlagCanBeGlobalAndConflictNotAllowed2)
     const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 
-    ASSERT_TRUE(parser->has("--array"));
-    ASSERT_TRUE(parser->has("-a"));
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--array"));
+    ASSERT_TRUE(store.has("-a"));
 
-    auto barrs = parser->get("--array").to<std::vector<bool>>();
+    auto barrs = store.get("--array").to<std::vector<bool>>();
 
     EXPECT_EQ(barrs.size(), 4);
     EXPECT_EQ(barrs[0], true);

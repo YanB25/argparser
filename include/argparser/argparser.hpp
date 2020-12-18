@@ -17,6 +17,38 @@
 namespace argparser
 {
 // TODO: unable to know the current command
+
+class ParserStore
+{
+public:
+    using Pointer = std::unique_ptr<ParserStore>;
+    ParserStore() = default;
+    void link_flag_store(flag::FlagStore::Pointer p)
+    {
+        flag_store_ = p;
+    }
+    void link_global_flag_store(flag::FlagStore::Pointer p)
+    {
+        gf_store_ = p;
+    }
+    const flag::AllocatedFlag &get(const std::string &name) const
+    {
+        if (flag_store_->has(name))
+        {
+            return flag_store_->get(name);
+        }
+        return gf_store_->get(name);
+    }
+    bool has(const std::string &name) const
+    {
+        return flag_store_->has(name) || gf_store_->has(name);
+    }
+
+
+private:
+    flag::FlagStore::Pointer flag_store_;
+    flag::FlagStore::Pointer gf_store_;
+};
 class Parser
 {
 public:
@@ -24,12 +56,15 @@ public:
     using FlagPair = std::pair<std::string, std::string>;
     using FlagPairs = std::list<FlagPair>;
     Parser(std::shared_ptr<flag::FlagStore> global_flag_store,
-           const char* description)
+           const char *description)
         : description_(description),
           flag_store_(flag::FlagStore::new_instance()),
           gf_store_(global_flag_store),
-          validator_(gf_store_)
+          validator_(gf_store_),
+          store_(std::make_unique<ParserStore>())
     {
+        store_->link_global_flag_store(gf_store_);
+        store_->link_flag_store(flag_store_);
     }
     void print_promt() const
     {
@@ -86,7 +121,7 @@ public:
     {
         return description_;
     }
-    Parser &command(const std::string &command, const char* desc = "")
+    Parser &command(const std::string &command, const char *desc = "")
     {
         sub_parsers_.emplace(command,
                              std::make_unique<Parser>(gf_store_, desc));
@@ -96,10 +131,10 @@ public:
     // TODO: make default has type?
     template <typename T>
     bool flag(T *flag,
-              const char* full_name,
-              const char* short_name,
-              const char* desc,
-              const char* default_val)
+              const char *full_name,
+              const char *short_name,
+              const char *desc,
+              const char *default_val)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -110,9 +145,9 @@ public:
     }
     template <typename T>
     bool flag(T *flag,
-              const char* full_name,
-              const char* short_name,
-              const char* desc)
+              const char *full_name,
+              const char *short_name,
+              const char *desc)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -126,9 +161,7 @@ public:
      * The user can later retrieve the flag via
      * int result = FlagStore::instance().get("--flag").to<int>();
      */
-    bool flag(const char* full_name,
-              const char* short_name,
-              const char* desc)
+    bool flag(const char *full_name, const char *short_name, const char *desc)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -137,10 +170,10 @@ public:
         return flag_store_->add_flag(
             full_name, short_name, desc, std::nullopt, true);
     }
-    bool flag(const char* full_name,
-              const char* short_name,
-              const char* desc,
-              const char* default_val)
+    bool flag(const char *full_name,
+              const char *short_name,
+              const char *desc,
+              const char *default_val)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -151,9 +184,9 @@ public:
     }
     template <typename T>
     bool global_flag(T *flag,
-                     const char* full_name,
-                     const char* short_name,
-                     const char* desc)
+                     const char *full_name,
+                     const char *short_name,
+                     const char *desc)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -164,10 +197,10 @@ public:
     }
     template <typename T>
     bool global_flag(T *flag,
-                     const char* full_name,
-                     const char* short_name,
-                     const char* desc,
-                     const char* default_val)
+                     const char *full_name,
+                     const char *short_name,
+                     const char *desc,
+                     const char *default_val)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -181,9 +214,9 @@ public:
      * The user can later retrieve the flag via
      * int result = FlagStore::instance().get("--flag").to<int>();
      */
-    bool global_flag(const char* full_name,
-                     const char* short_name,
-                     const char* desc)
+    bool global_flag(const char *full_name,
+                     const char *short_name,
+                     const char *desc)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -192,10 +225,10 @@ public:
         return gf_store_->add_flag(
             full_name, short_name, desc, std::nullopt, true);
     }
-    bool global_flag(const char* full_name,
-                     const char* short_name,
-                     const char* desc,
-                     const char* default_val)
+    bool global_flag(const char *full_name,
+                     const char *short_name,
+                     const char *desc,
+                     const char *default_val)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -210,25 +243,16 @@ public:
         program_name = argv[0];
 
         auto pairs = retrieve(argc, argv);
-        return do_parse(pairs, command_path_);
+        return do_parse(pairs, store_, command_path_);
     }
     std::vector<std::string> command_path() const
     {
         return command_path_;
     }
-    const flag::AllocatedFlag &get(const std::string &name) const
+    const ParserStore& store() const
     {
-        if (flag_store_->has(name))
-        {
-            return flag_store_->get(name);
-        }
-        return gf_store_->get(name);
+        return *store_;
     }
-    bool has(const std::string &name) const
-    {
-        return flag_store_->has(name) || gf_store_->has(name);
-    }
-
 private:
     bool init_{false};
     std::string program_name;
@@ -242,6 +266,7 @@ private:
     flag::Validator validator_;
 
     std::vector<std::string> command_path_;
+    ParserStore::Pointer store_;
 
     void print_usage() const
     {
@@ -280,9 +305,12 @@ private:
             std::cout << std::endl;
         }
     }
-    bool do_parse(FlagPairs &pairs, std::vector<std::string> &command_path)
+    bool do_parse(FlagPairs &pairs,
+                  ParserStore::Pointer &store,
+                  std::vector<std::string> &command_path)
     {
         init_ = true;
+        store->link_flag_store(flag_store_);
 
         for (auto pair_it = pairs.begin(); pair_it != pairs.end(); ++pair_it)
         {
@@ -310,7 +338,7 @@ private:
                 // sub_parser
                 pairs.erase(pairs.begin(), ++pair_it);
                 command_path.push_back(key);
-                return sub_parser->do_parse(pairs, command_path);
+                return sub_parser->do_parse(pairs, store, command_path);
             }
 
             if (!flag_store_->apply(key, value) &&
@@ -395,13 +423,13 @@ private:
         return ret;
     }
 };  // namespace argparser
-std::shared_ptr<Parser> new_parser(const char* desc = "")
+std::shared_ptr<Parser> new_parser(const char *desc = "")
 {
     auto global_flag_store = std::make_shared<flag::FlagStore>();
     return std::make_shared<Parser>(global_flag_store, desc);
 }
 
-Parser &init(const char* desc)
+Parser &init(const char *desc)
 {
     static std::shared_ptr<Parser> root_parser;
     if (root_parser == nullptr)
@@ -413,8 +441,7 @@ Parser &init(const char* desc)
 namespace impl
 {
 std::shared_ptr<Parser> new_parser(
-    std::shared_ptr<flag::FlagStore> global_flag_store,
-    const char* desc = "")
+    std::shared_ptr<flag::FlagStore> global_flag_store, const char *desc = "")
 {
     return std::make_shared<Parser>(global_flag_store, desc);
 }

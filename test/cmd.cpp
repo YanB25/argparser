@@ -81,16 +81,18 @@ TEST(ArgparserCommand, ShouldParseCommandAllocatedFlag)
                          "--b",
                          "true"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    ASSERT_TRUE(parser->has("--i"));
-    ASSERT_TRUE(parser->has("--u"));
-    ASSERT_TRUE(parser->has("--s"));
-    ASSERT_TRUE(parser->has("--d"));
-    ASSERT_TRUE(parser->has("--b"));
-    EXPECT_EQ(parser->get("--i").to<int64_t>(), 2);
-    EXPECT_EQ(parser->get("--u").to<uint64_t>(), 3);
-    EXPECT_STREQ(parser->get("--s").to<std::string>().c_str(), "say hi!");
-    EXPECT_EQ(parser->get("--d").to<double>(), -7.5);
-    EXPECT_EQ(parser->get("--b").to<bool>(), true);
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--i"));
+    ASSERT_TRUE(store.has("--u"));
+    ASSERT_TRUE(store.has("--s"));
+    ASSERT_TRUE(store.has("--d"));
+    ASSERT_TRUE(store.has("--b"));
+    EXPECT_EQ(store.get("--i").to<int64_t>(), 2);
+    EXPECT_EQ(store.get("--u").to<uint64_t>(), 3);
+    EXPECT_STREQ(store.get("--s").to<std::string>().c_str(), "say hi!");
+    EXPECT_EQ(store.get("--d").to<double>(), -7.5);
+    EXPECT_EQ(store.get("--b").to<bool>(), true);
 }
 TEST(ArgparserCommand, ShouldParseRootFlag)
 {
