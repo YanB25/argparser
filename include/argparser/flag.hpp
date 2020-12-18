@@ -35,6 +35,7 @@ public:
           short_name_(short_name),
           desc_(desc)
     {
+        std::cerr << "concret: I got " << flag_;
     }
     static std::shared_ptr<ConcreteFlag<T>> make_flag(
         T *flag,
@@ -92,6 +93,7 @@ public:
                   const std::string &desc)
         : ConcreteFlag(&inner_, full_name, short_name, desc)
     {
+        std::cerr << "inner_ address is " << &inner_;
     }
     static std::shared_ptr<AllocatedFlag> make_flag(
         const std::string &full_name,
