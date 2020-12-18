@@ -8,6 +8,15 @@ dist: bionic
 
 osx_image: xcode12.2
 
+addons:
+  apt:
+    packages: 
+      - valgrind
+  homebrew:
+    packages:
+      - valgrind
+    update: true
+
 # addons:
 #   apt:
 #     sources:
@@ -16,21 +25,7 @@ osx_image: xcode12.2
 #       - gcc-7
 #       - g++-7
 #       - cmake
-  
-# before_install:
-#   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-#       brew update ;
-#       brew upgrade cmake ;
-#     fi
-#   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-#       sudo apt upgrade cmake ;
-#     fi
-
 install:
-  # - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-  #     export CC=gcc-7 ;
-  #     export CXX=g++-7 ;
-  #   fi
   - mkdir build
   - cd build
   - cmake --version
@@ -39,3 +34,4 @@ install:
  
 script:
   - make test
+  - valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -v ./examples/arg
