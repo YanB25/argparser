@@ -52,6 +52,46 @@ TEST(ArgparserCommand, ShouldParseCommandFlag)
     EXPECT_EQ(d, -7.5);
     EXPECT_EQ(b, true);
 }
+TEST(ArgparserCommand, ShouldParseCommandAllocatedFlag)
+{
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag("--i", "", "", "0"));
+    EXPECT_TRUE(parser->flag("--u", "", "", "0"));
+    EXPECT_TRUE(parser->flag("--s", "", "", "0"));
+    EXPECT_TRUE(parser->flag("--d", "", "", "0"));
+    EXPECT_TRUE(parser->flag("--b", "", "", "0"));
+
+    auto &sub_parser = parser->command("test");
+    EXPECT_TRUE(sub_parser.flag("--i", "", "", "0"));
+    EXPECT_TRUE(sub_parser.flag("--u", "", "", "0"));
+    EXPECT_TRUE(sub_parser.flag("--s", "", "", "0"));
+    EXPECT_TRUE(sub_parser.flag("--d", "", "", "0"));
+    EXPECT_TRUE(sub_parser.flag("--b", "", "", "0"));
+
+    const char *arg[] = {"./argtest",
+                         "test",
+                         "--i",
+                         "2",
+                         "--u",
+                         "3",
+                         "--s",
+                         "say hi!",
+                         "--d",
+                         "-7.5",
+                         "--b",
+                         "true"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    ASSERT_TRUE(parser->has("--i"));
+    ASSERT_TRUE(parser->has("--u"));
+    ASSERT_TRUE(parser->has("--s"));
+    ASSERT_TRUE(parser->has("--d"));
+    ASSERT_TRUE(parser->has("--b"));
+    EXPECT_EQ(parser->get("--i").to<int64_t>(), 2);
+    EXPECT_EQ(parser->get("--u").to<uint64_t>(), 3);
+    EXPECT_STREQ(parser->get("--s").to<std::string>().c_str(), "say hi!");
+    EXPECT_EQ(parser->get("--d").to<double>(), -7.5);
+    EXPECT_EQ(parser->get("--b").to<bool>(), true);
+}
 TEST(ArgparserCommand, ShouldParseRootFlag)
 {
     int64_t i;
@@ -126,8 +166,7 @@ TEST(ArgparserCommand, SameCommandSameParser)
     EXPECT_TRUE(sub_parser_1.flag(&i, "--i", "", "", "0"));
     EXPECT_TRUE(sub_parser_2.flag(&j, "--j", "", "", "0"));
 
-    const char *arg[] = {
-        "./argtest", "same", "--i=12345", "--j=23456"};
+    const char *arg[] = {"./argtest", "same", "--i=12345", "--j=23456"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(i, 12345);
     EXPECT_EQ(j, 23456);
@@ -141,8 +180,7 @@ TEST(ArgparserCommand, RootCommandNotAcceptSubFlag)
     EXPECT_TRUE(parser->flag(&i, "--i", "", "", "0"));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", "", "0"));
 
-    const char *arg[] = {
-        "./argtest", "--j=23456"};
+    const char *arg[] = {"./argtest", "--j=23456"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
 TEST(ArgparserCommand, RootCommandOnlyRequireRootFlag)
@@ -154,8 +192,7 @@ TEST(ArgparserCommand, RootCommandOnlyRequireRootFlag)
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
 
-    const char *arg[] = {
-        "./argtest", "--i=12345"};
+    const char *arg[] = {"./argtest", "--i=12345"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(i, 12345);
 }
@@ -168,8 +205,7 @@ TEST(ArgparserCommand, FailedIfRootCommandWithSubFlag)
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
 
-    const char *arg[] = {
-        "./argtest", "--j=12345"};
+    const char *arg[] = {"./argtest", "--j=12345"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
 TEST(ArgparserCommand, SubCommandNotAcceptRootFlag)
@@ -181,8 +217,7 @@ TEST(ArgparserCommand, SubCommandNotAcceptRootFlag)
     EXPECT_TRUE(parser->flag(&i, "--i", "", "", "0"));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", "", "0"));
 
-    const char *arg[] = {
-        "./argtest", "same", "--i=12345"};
+    const char *arg[] = {"./argtest", "same", "--i=12345"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
 TEST(ArgparserCommand, SubCommandOnlyRequireSubFlag)
@@ -194,8 +229,7 @@ TEST(ArgparserCommand, SubCommandOnlyRequireSubFlag)
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
 
-    const char *arg[] = {
-        "./argtest", "same", "--j=23456"};
+    const char *arg[] = {"./argtest", "same", "--j=23456"};
     EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
     EXPECT_EQ(j, 23456);
 }
@@ -208,8 +242,7 @@ TEST(ArgparserCommand, FailedIfSubCommandWithRootFlag)
     EXPECT_TRUE(parser->flag(&i, "--i", "", ""));
     EXPECT_TRUE(sub_parser.flag(&j, "--j", "", ""));
 
-    const char *arg[] = {
-        "./argtest", "same", "--i=12345"};
+    const char *arg[] = {"./argtest", "same", "--i=12345"};
     EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
 }
 int main(int argc, char **argv)

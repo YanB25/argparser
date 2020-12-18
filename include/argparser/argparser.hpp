@@ -24,7 +24,7 @@ public:
     using FlagPair = std::pair<std::string, std::string>;
     using FlagPairs = std::list<FlagPair>;
     Parser(std::shared_ptr<flag::FlagStore> global_flag_store,
-           const std::string &description)
+           const char* description)
         : description_(description),
           flag_store_(flag::FlagStore::new_instance()),
           gf_store_(global_flag_store),
@@ -86,7 +86,7 @@ public:
     {
         return description_;
     }
-    Parser &command(const std::string &command, const std::string &desc = {})
+    Parser &command(const std::string &command, const char* desc = {})
     {
         sub_parsers_.emplace(command,
                              std::make_unique<Parser>(gf_store_, desc));
@@ -96,10 +96,10 @@ public:
     // TODO: make default has type?
     template <typename T>
     bool flag(T *flag,
-              const std::string &full_name,
-              const std::string &short_name,
-              const std::string &desc,
-              const std::optional<std::string> &default_val)
+              const char* full_name,
+              const char* short_name,
+              const char* desc,
+              const char* default_val)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -110,9 +110,9 @@ public:
     }
     template <typename T>
     bool flag(T *flag,
-              const std::string &full_name,
-              const std::string &short_name,
-              const std::string &desc)
+              const char* full_name,
+              const char* short_name,
+              const char* desc)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -126,9 +126,9 @@ public:
      * The user can later retrieve the flag via
      * int result = FlagStore::instance().get("--flag").to<int>();
      */
-    bool flag(const std::string &full_name,
-              const std::string &short_name,
-              const std::string &desc)
+    bool flag(const char* full_name,
+              const char* short_name,
+              const char* desc)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -137,10 +137,10 @@ public:
         return flag_store_->add_flag(
             full_name, short_name, desc, std::nullopt, true);
     }
-    bool flag(const std::string &full_name,
-              const std::string &short_name,
-              const std::string &desc,
-              const std::optional<std::string> &default_val)
+    bool flag(const char* full_name,
+              const char* short_name,
+              const char* desc,
+              const char* default_val)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -151,9 +151,9 @@ public:
     }
     template <typename T>
     bool global_flag(T *flag,
-                     const std::string &full_name,
-                     const std::string &short_name,
-                     const std::string &desc)
+                     const char* full_name,
+                     const char* short_name,
+                     const char* desc)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -164,10 +164,10 @@ public:
     }
     template <typename T>
     bool global_flag(T *flag,
-                     const std::string &full_name,
-                     const std::string &short_name,
-                     const std::string &desc,
-                     const std::optional<std::string> &default_val)
+                     const char* full_name,
+                     const char* short_name,
+                     const char* desc,
+                     const char* default_val)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -181,9 +181,9 @@ public:
      * The user can later retrieve the flag via
      * int result = FlagStore::instance().get("--flag").to<int>();
      */
-    bool global_flag(const std::string &full_name,
-                     const std::string &short_name,
-                     const std::string &desc)
+    bool global_flag(const char* full_name,
+                     const char* short_name,
+                     const char* desc)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -192,10 +192,10 @@ public:
         return gf_store_->add_flag(
             full_name, short_name, desc, std::nullopt, true);
     }
-    bool global_flag(const std::string &full_name,
-                     const std::string &short_name,
-                     const std::string &desc,
-                     const std::optional<std::string> &default_val)
+    bool global_flag(const char* full_name,
+                     const char* short_name,
+                     const char* desc,
+                     const char* default_val)
     {
         if (!validator_.validate(full_name, short_name))
         {
@@ -395,13 +395,13 @@ private:
         return ret;
     }
 };  // namespace argparser
-std::shared_ptr<Parser> new_parser(const std::string &desc = {})
+std::shared_ptr<Parser> new_parser(const char* desc = {})
 {
     auto global_flag_store = std::make_shared<flag::FlagStore>();
     return std::make_shared<Parser>(global_flag_store, desc);
 }
 
-Parser &init(const std::string &desc)
+Parser &init(const char* desc)
 {
     static std::shared_ptr<Parser> root_parser;
     if (root_parser == nullptr)
@@ -414,7 +414,7 @@ namespace impl
 {
 std::shared_ptr<Parser> new_parser(
     std::shared_ptr<flag::FlagStore> global_flag_store,
-    const std::string &desc = {})
+    const char* desc = {})
 {
     return std::make_shared<Parser>(global_flag_store, desc);
 }
