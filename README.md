@@ -1,10 +1,20 @@
 # ArgParser: A lightweight C++ command-line parser
 
-ArgParser is a lightweight command line parser written in C++. The goal of ArgParser is to provide a most convenient and easy-to-use library for building command-line programs.
+ArgParser is a lightweight command line parser written in C++. The goal of ArgParser is to provide the most convenient and easy-to-use library for building command-line programs.
 
 ArgParser is lightweight and has no external dependency.
 
-Feel free to pull-request or open an issue if you have any problems.
+The library is suitable for you, if you
+
+- are looking for a correct, most convenient and easy-to-use command-line parser.
+
+- do not care for extremely high performance and memory occupation. (ArgParser is not slow or using memory blindly, but it is not optimized for these goals.)
+
+You are not suggested to use this library if you
+
+- are writing codes for production environments.
+
+**Feel free to pull-request or open an issue if you have any problems.**
 
 ## Quick Start
 
@@ -60,15 +70,17 @@ See `bin/helloworld.cpp` for the source codes of the above example. `bin/*.cpp` 
 
 ## Concept
 
-The central concepts of ArgParser are *commands* and *flags*. Any label started with `--` or `-` is regarded as a flag(e.g. `--time`), while others as a command(e.g. `run`). Defining a new *command* essentially enters a new private namespace. Namespaces can be nested arbitrarily. Only the specific flags defined within the current namespace(command) is recognized and parsed. Providing extra flags within other namespaces, including the parent namespace, is deemed a casual mistake.
+The central concepts of ArgParser are *commands* and *flags*. Any label started with `--` or `-` is regarded as a flag(e.g. `--time`), while others as a command(e.g. `run`).
 
-*global flags* are also support to specify global setting/constraints for the program.
+Defining a new *command* essentially enters a new private flag-space. Flag-spaces can be nested arbitrarily. Only the specific flags defined within the current space is recognized and parsed. Providing extra flags within other flag-spaces, including the parent/root flag-space, is deemed a casual mistake.
+
+*global flags* are also supported to specify the global setting/constraints for the program.
 
 ## Basic Usage
 
 ### Flag Registration
 
-Depending on how you want to place the flags, Argparser supports both *registered flag* and *stored flag*.
+Depending on who owns the storage of the flags, Argparser supports both *registered flag* and *stored flag*.
 
 
 **Registered Flag**  You can either *register* an in-stack variable to ArgParser as in the previous example.
@@ -102,34 +114,53 @@ int time = store.get("-t").to<int>();
 std::cout << "data is " << data << ", time is " << time << std::endl;
 ```
 
+### Commands
+
+You can define *command* in ArgParser for hierarchical groups of actions and flags. Commands provide isolation: whenever a command is defined, a new `sub-parser` is generated. The flag is only recognized in the corresponding (sub-)parser.
+
+``` c++
+auto& sub_parser = parser.command("run", "Run the program");
+sub_parser.flag("--time", "-t", "Duration of the program");
+```
+
+The above codes define a command `run` to the program and attach a flag `--time` *to the command*.
+
+``` bash
+./program --time       # ERROR: --time flag not found
+./program run --time   # Good.
+```
+
+Please note that the child sub-parser will *NOT* inherit the flags from its parent parser. Providing a flag registered in the parent parser generates an "unknown flag" error.
+
+
 ### Flag Scope
 
 Depending on the scope of the flag, ArgParser supports *scoped flag* and *global flag*.
 
-**scoped flag**  The flags in the previous examples are all scoped flags(using `parser.flag(...)`). They only exist in the current namespace. 
+**scoped flag**  They scoped flags only take effect in the current flag-space (the current command). The flags in the previous examples are all scoped flags (using `parser.flag(...)`). 
 
-**global flag**  ArgParser also supports global flags that exist in all levels of namespaces.
+**global flag**  ArgParser also supports global flags that exist in all levels of flag-spaces. Global flags are especially helpful when setting global constraints/parameters to the whole program.
 
 ``` c++
 parser.global_flag(&flag, "--global-flag", "-g", "A global flag");
 parser.global_flag("--stored-global-flag", "-s", "A stored global flag");
 ```
 
-You can always provide a global flag in all levels of commands.
+The global flags are always parsed regardless of the current level of flag-space.
 
 ``` bash
-./program --global-flag=5 # okay
-./program run --global-flag=5 # okay
-./program run ycsb TypeA quick --global-flag=5 # also okay
+./program --global-flag=5                         # okay
+./program run --global-flag=5                     # okay
+./program run ycsb type_a quick --global-flag=5   # also okay
 ```
 
-### Explanation of Store
+### Introduction to Store API
 
-Use `parser.store()` to obtain a const reference, which is the only way to access the store.
+The `Store` is only accessible through `parser.store()`, which gives a const reference to the un-copyable `store` object.
 
-The store provides two API, `store.has("--time")` and `store.get("--time")`. The former tells whether the flag exists in the store. The latter tries to retrieve an *internal representation* of the flag-value. If the retrieval fails, the program crashes immediately to avoid potential errors, so be aware.
+The store provides two API, `store.has("--time")` and `store.get("--time")`. The former tells whether the flag exists in the store. The latter retrieves an *internal representation* (explained later) of the flag's value. If the retrieval fails, the program crashes immediately to avoid potential errors, so be careful.
 
-`store.get(..)` gives an internal representation because ArgParser does not know the *type* of the flag. For example, parsing `--flag=true` to `std::string` or `bool` gives different results. You must use `store.get(...).to<T>` to obtain the final results, as did in the above codes.
+`store.get(..)` gives an internal representation because ArgParser does not know the *type* of the flag. For example, parsing `--flag=true` to `std::string` or `bool` gives different results. You must use `store.get(...).to<T>` to specify type conversion and obtain the final results, as did in the above codes.
 
 ### Basic Assumptions
 
@@ -144,7 +175,69 @@ ArgParser assumes several basic rules:
   
 - Not suprising, local variables registered to ArgParser MUST BE valid during `parser.parse`.
 
+## Advanced Usage
 
+### Flag Type
+
+ArgParser respects the *type* of the flag. A string flag `"true"` and a boolean flag `true` are different to ArgParser.
+
+ArgParser smartly parse the command-line arguments according to the required type.
+
+``` c++
+// two ways ArgParser gets the type information
+bool b;
+parser.flag(&b, ...); // ArgParser knows it is a boolean
+
+// ArgParser dest not know the type for now.
+parser.flag("--flag", "-f"); 
+auto& store = parser.store();
+assert(store.get("--flag").convertable_to<bool>()); // assert convertable
+bool b2 = store.get("--flag").to<bool>(); // ArgParser knowns you want a bool
+```
+
+Please note that `.to<T>()` will immediately crash the program if the conversion fails. You can use `.convertable_to<T>()` to check the compatibility.
+
+### String and Vector
+
+ArgParser also supports `string`, `vector`, even `vector<string>`.
+
+``` c++
+std::vector<int> array;
+parser.flag(&array, "--array", "-a"); // okay
+
+store.get("--another-array").to<std::vector<int>>(); // also okay
+```
+
+Provide a list in your command-line arguments, e.g.
+
+``` bash
+./program --array 1,2,3,4,5           # okay
+./program --another-array=1,2,3,4,5   # also okay
+```
+
+### Custom Type
+
+You can also use ArgParser to parse custom types if you provide your customed conversion from `std::string` to your type.
+
+``` c++
+class Bar;
+// provide your conversion
+template <>
+Bar argparser::convert::to<Bar>(const std::string& input)
+{
+    // ...
+    return bar;
+}
+```
+
+Then you can use your *Bar-type* flag as usual.
+
+``` c++
+parser.flag(&bar, "--bar", "-b", "My special Bar type"); //okay
+// or
+Bar bar = store.get("--stored-bar").to<Bar>(); // okay!
+
+```
 
 ## Why me
 
@@ -170,12 +263,18 @@ program
 
 In most command-line tools, *flags* are relevant only in the context of a *command*. ArgParser supports layer structure by parsing command recursively and collecting the relevant flags on the way. Any mismatch flags are deemed as an error.
 
+## Correctness
+
+The unit tests are under `test/` folder, using [gtest](https://github.com/google/googletest).
+
+If you find a bug, you are welcome to open an issue or pull request.
+
 ## Compile and use
 
 ``` bash
 mkdir build; cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-# Unit tests are included by default. If you want to disable them, use
+# Unit tests are built by default. If you want to disable them, use
 # cmake -DBUILD_UNITTEST=OFF ..
 make -j
 make test # Run the unit tests. They should pass.
