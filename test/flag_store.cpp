@@ -550,6 +550,48 @@ TEST(ArgparserFlagStore, AllocatedFlagCanBeGlobal2)
     EXPECT_EQ(barrs[2], true);
     EXPECT_EQ(barrs[3], false);
 }
+TEST(ArgparserFlagStore, AllocatedFlagCanBeGlobalAndConflictNotAllowed)
+{
+    auto parser = argparser::new_parser();
+    std::vector<bool> barrs;
+    EXPECT_TRUE(parser->global_flag(
+        &barrs, "--array", "-a", "An array that has wrong middle elements"));
+    EXPECT_FALSE(parser->global_flag(
+        "--array", "-a", "An array that has wrong middle elements"));
+    const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+
+    EXPECT_FALSE(parser->has("--array"));
+    EXPECT_FALSE(parser->has("-a"));
+
+    EXPECT_EQ(barrs.size(), 4);
+    EXPECT_EQ(barrs[0], true);
+    EXPECT_EQ(barrs[1], false);
+    EXPECT_EQ(barrs[2], true);
+    EXPECT_EQ(barrs[3], false);
+}
+TEST(ArgparserFlagStore, AllocatedFlagCanBeGlobalAndConflictNotAllowed2)
+{
+    auto parser = argparser::new_parser();
+    std::vector<bool> tmp;
+    EXPECT_TRUE(parser->global_flag(
+        "--array", "-a", "An array that has wrong middle elements"));
+    EXPECT_FALSE(parser->global_flag(
+        &tmp, "--array", "-a", "An array that has wrong middle elements"));
+    const char *arg[] = {"./argtest", "-a", "true,false,1,0"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+
+    ASSERT_TRUE(parser->has("--array"));
+    ASSERT_TRUE(parser->has("-a"));
+
+    auto barrs = parser->get("--array").to<std::vector<bool>>();
+
+    EXPECT_EQ(barrs.size(), 4);
+    EXPECT_EQ(barrs[0], true);
+    EXPECT_EQ(barrs[1], false);
+    EXPECT_EQ(barrs[2], true);
+    EXPECT_EQ(barrs[3], false);
+}
 
 int main(int argc, char **argv)
 {
