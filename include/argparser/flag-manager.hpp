@@ -66,6 +66,7 @@ public:
         auto meta = Meta(required, false);
         allocated_flags_.emplace_back(
             flag::AllocatedFlag(full_name, short_name, desc), std::move(meta));
+        std::cerr << "outsize get addr: " << &allocated_flags_.back().first.inner() << std::endl;
         if (default_val.has_value())
         {
             auto &allocated_flag = allocated_flags_.back().first;

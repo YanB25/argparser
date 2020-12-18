@@ -13,14 +13,46 @@ class Flag
 {
 public:
     using Pointer = std::shared_ptr<Flag>;
-    Flag() = default;
+    Flag(const std::string &full_name,
+         const std::string &short_name,
+         const std::string &desc)
+        : full_name_(full_name), short_name_(short_name), desc_(desc)
+    {
+    }
     virtual ~Flag() = default;
-    virtual bool match(const std::string &) const = 0;
-    virtual std::string to_string() const = 0;
+
     virtual bool apply(const std::string &value) = 0;
-    virtual std::string short_name() const = 0;
-    virtual std::string full_name() const = 0;
-    virtual std::string desc() const = 0;
+
+    virtual std::string short_name() const
+    {
+        return short_name_;
+    }
+    virtual std::string full_name() const
+    {
+        return full_name_;
+    }
+    virtual std::string desc() const
+    {
+        return desc_;
+    }
+    virtual bool match(const std::string & key) const
+    {
+        // never match an empty string.
+        if (key.empty())
+        {
+            return false;
+        }
+        return key == full_name_ || key == short_name_;
+    }
+    virtual std::string to_string() const
+    {
+        return "{Flag " + full_name_ + ", " + short_name_ + "}";
+    }
+
+private:
+    std::string full_name_;
+    std::string short_name_;
+    std::string desc_;
 };
 template <typename T>
 class ConcreteFlag : public Flag
@@ -30,12 +62,8 @@ public:
                  const std::string &full_name,
                  const std::string &short_name,
                  const std::string &desc)
-        : flag_(flag),
-          full_name_(full_name),
-          short_name_(short_name),
-          desc_(desc)
+        : Flag(full_name, short_name, desc), flag_(flag)
     {
-        std::cerr << "concret: I got " << flag_;
     }
     static std::shared_ptr<ConcreteFlag<T>> make_flag(
         T *flag,
@@ -46,54 +74,25 @@ public:
         return std::make_shared<ConcreteFlag<T>>(
             flag, full_name, short_name, desc);
     }
-    bool match(const std::string &key) const override
-    {
-        // never match an empty string.
-        if (key.empty())
-        {
-            return false;
-        }
-        return key == full_name_ || key == short_name_;
-    }
-    std::string to_string() const override
-    {
-        return "{Flag " + full_name_ + ", " + short_name_ + "}";
-    }
     bool apply(const std::string &value) override
     {
         return apply_to(flag_, value);
     }
     static bool apply_to(T *target, const std::string &value);
-    std::string short_name() const override
-    {
-        return short_name_;
-    }
-    std::string full_name() const override
-    {
-        return full_name_;
-    }
-    std::string desc() const override
-    {
-        return desc_;
-    }
     ~ConcreteFlag() = default;
 
-private:
+protected:
     T *flag_;
-    std::string full_name_;
-    std::string short_name_;
-    std::string desc_;
 };
 
-class AllocatedFlag : public ConcreteFlag<std::string>
+class AllocatedFlag : public Flag
 {
 public:
     AllocatedFlag(const std::string &full_name,
                   const std::string &short_name,
                   const std::string &desc)
-        : ConcreteFlag(&inner_, full_name, short_name, desc)
+        : Flag(full_name, short_name, desc)
     {
-        std::cerr << "inner_ address is " << &inner_;
     }
     static std::shared_ptr<AllocatedFlag> make_flag(
         const std::string &full_name,
@@ -103,9 +102,14 @@ public:
         return std::make_shared<AllocatedFlag>(full_name, short_name, desc);
     }
 
-    const std::string& inner() const
+    const std::string &inner() const
     {
         return inner_;
+    }
+    bool apply(const std::string &value) override
+    {
+        inner_ = value;
+        return true;
     }
 
 private:
