@@ -5,6 +5,8 @@
 #include <istream>
 #include <string>
 
+#include "./convert.hpp"
+
 namespace argparser
 {
 namespace flag
@@ -35,7 +37,7 @@ public:
     {
         return desc_;
     }
-    virtual bool match(const std::string & key) const
+    virtual bool match(const std::string &key) const
     {
         // never match an empty string.
         if (key.empty())
@@ -76,9 +78,8 @@ public:
     }
     bool apply(const std::string &value) override
     {
-        return apply_to(flag_, value);
+        return argparse::convert::apply_to<T>(flag_, value);
     }
-    static bool apply_to(T *target, const std::string &value);
     ~ConcreteFlag() = default;
 
 protected:
@@ -112,69 +113,33 @@ public:
         return true;
     }
 
+    template <typename T>
+    T to() const
+    {
+        // TODO: should be extandable
+        return argparse::convert::to<T>(inner_);
+    }
+    template <typename T>
+    bool convertable_to() const
+    {
+        T tmp;
+        return argparse::convert::apply_to<T>(&tmp, inner_);
+    }
+
 private:
     std::string inner_;
 };
 
-template <typename T>
-std::istream &operator>>(std::istream &is, std::vector<T> &vec)
+template <>
+std::string AllocatedFlag::to<std::string>() const
 {
-    std::string token;
-    vec.clear();
-    while (!is.eof())
-    {
-        std::getline(is, token, ',');
-        T tmp;
-        bool succ = ConcreteFlag<T>::apply_to(&tmp, token);
-        if (!succ)
-        {
-            // manually set fail bit
-            is.setstate(std::ios_base::failbit);
-            return is;
-        }
-        vec.emplace_back(std::move(tmp));
-    }
-    return is;
-}
-
-template <typename T>
-bool ConcreteFlag<T>::apply_to(T *target, const std::string &value)
-{
-    if (value.find(' ') != std::string::npos)
-    {
-        return false;
-    }
-    std::istringstream iss(value);
-    iss >> *target;
-    return iss.eof() && !iss.fail();
+    return inner_;
 }
 
 template <>
-bool ConcreteFlag<bool>::apply_to(bool *target, const std::string &value)
+bool AllocatedFlag::convertable_to<std::string>() const
 {
-    if (value.find(' ') != std::string::npos)
-    {
-        return false;
-    }
-
-    if (value.empty() || value == "1" || value == "true")
-    {
-        *target = true;
-        return true;
-    }
-    else if (value == "0" || value == "false")
-    {
-        *target = false;
-        return true;
-    }
-    return false;
-}
-template <>
-bool ConcreteFlag<std::string>::apply_to(std::string *target,
-                                         const std::string &value)
-{
-    *target = value;
-    return true;
+    return !inner_.empty();
 }
 
 }  // namespace flag

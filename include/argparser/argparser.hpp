@@ -192,6 +192,10 @@ public:
     {
         return flag_store_->get(name);
     }
+    bool has(const std::string& name) const
+    {
+        return flag_store_->has(name);
+    }
 
 private:
     bool init_{false};
