@@ -12,19 +12,8 @@ addons:
   apt:
     packages: 
       - valgrind
-  homebrew:
-    packages:
-      - valgrind
     update: true
 
-# addons:
-#   apt:
-#     sources:
-#       - ubuntu-toolchain-r-test
-#     packages:
-#       - gcc-7
-#       - g++-7
-#       - cmake
 install:
   - mkdir build
   - cd build
@@ -34,4 +23,6 @@ install:
  
 script:
   - make test
-  - valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -v ./examples/arg
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -v ./examples/arg
+    if
