@@ -90,7 +90,7 @@ public:
     AllocatedFlag(const std::string &full_name,
                   const std::string &short_name,
                   const std::string &desc)
-        : ConcreteFlag(&inner, full_name, short_name, desc)
+        : ConcreteFlag(&inner_, full_name, short_name, desc)
     {
     }
     static std::shared_ptr<AllocatedFlag> make_flag(
@@ -101,8 +101,13 @@ public:
         return std::make_shared<AllocatedFlag>(full_name, short_name, desc);
     }
 
+    const std::string& inner() const
+    {
+        return inner_;
+    }
+
 private:
-    std::string inner;
+    std::string inner_;
 };
 
 template <typename T>

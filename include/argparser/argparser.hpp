@@ -188,6 +188,10 @@ public:
     {
         return command_path_;
     }
+    const flag::AllocatedFlag& get(const std::string& name) const
+    {
+        return flag_manager_->get(name);
+    }
 
 private:
     bool init_{false};

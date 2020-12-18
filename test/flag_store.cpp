@@ -15,27 +15,29 @@ TEST(ArgparserFlagStore, Trivial)
 
 TEST(ArgparserFlagStore, ParseInt)
 {
-    // auto parser = argparser::new_parser();
-    // EXPECT_TRUE(parser->flag( "--int", "-i", "number i"));
-    // EXPECT_TRUE(parser->flag( "--zero", "-z", "== 0"));
-    // EXPECT_TRUE(parser->flag("--positive", "-p", "> 0"));
-    // EXPECT_TRUE(parser->flag("--negative", "-n", "< 0"));
-    // const char *arg[] = {"./argtest",
-    //                      "--int",
-    //                      "5",
-    //                      "--zero",
-    //                      "0",
-    //                      "--positive",
-    //                      "8",
-    //                      "--negative",
-    //                      "-21"};
-    // EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
-    // auto flag_store = argparser::flag::FlagStore::global_instance();
-    // auto pi = flag_store->get("--int");
-    // EXPECT_EQ(i, 5);
-    // EXPECT_EQ(zero, 0);
-    // EXPECT_EQ(pos, 8);
-    // EXPECT_EQ(neg, -21);
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag( "--int", "-i", "number i"));
+    EXPECT_TRUE(parser->flag( "--zero", "-z", "== 0"));
+    EXPECT_TRUE(parser->flag("--positive", "-p", "> 0"));
+    EXPECT_TRUE(parser->flag("--negative", "-n", "< 0"));
+    const char *arg[] = {"./argtest",
+                         "--int",
+                         "5",
+                         "--zero",
+                         "0",
+                         "--positive",
+                         "8",
+                         "--negative",
+                         "-21"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    auto& pi = parser->get("--int");
+    auto& pz = parser->get("--zero");
+    auto& pp = parser->get("--positive");
+    auto& pn = parser->get("--negative");
+    EXPECT_STREQ(pi.inner().c_str(), "5");
+    EXPECT_STREQ(pz.inner().c_str(), "0");
+    EXPECT_STREQ(pp.inner().c_str(), "8");
+    EXPECT_STREQ(pn.inner().c_str(), "-21");
 }
 
 TEST(ArgparserFlagStore, ParseInt64)

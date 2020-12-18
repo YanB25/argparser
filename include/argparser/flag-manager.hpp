@@ -160,6 +160,29 @@ public:
         }
         return false;
     }
+    const flag::AllocatedFlag& get(const std::string& name) const
+    {
+        for (const auto&[flag, meta]: allocated_flags_)
+        {
+            if (flag.match(name))
+            {
+                return flag;
+            }
+        }
+        std::cerr << "Failed to get " << name << ": not found." << std::endl;
+        std::terminate();
+    }
+    bool has(const std::string& name) const
+    {
+        for (const auto&[flag, meta]: allocated_flags_)
+        {
+            if (flag.match(name))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
     size_t size() const
     {
         return flags_.size() + allocated_flags_.size();
