@@ -12,12 +12,12 @@ namespace flag
 class Flag
 {
 public:
+    using Pointer = std::shared_ptr<Flag>;
     Flag() = default;
     virtual ~Flag() = default;
-    virtual bool match(const std::string &) = 0;
+    virtual bool match(const std::string &) const = 0;
     virtual std::string to_string() const = 0;
     virtual bool apply(const std::string &value) = 0;
-    virtual bool apply_default() = 0;
     virtual std::string short_name() const = 0;
     virtual std::string full_name() const = 0;
     virtual std::string desc() const = 0;
@@ -29,26 +29,23 @@ public:
     ConcreteFlag(T *flag,
                  const std::string &full_name,
                  const std::string &short_name,
-                 const std::string &desc,
-                 const std::optional<std::string> &default_val)
+                 const std::string &desc)
         : flag_(flag),
           full_name_(full_name),
           short_name_(short_name),
-          desc_(desc),
-          default_(default_val)
+          desc_(desc)
     {
     }
     static std::shared_ptr<ConcreteFlag<T>> make_flag(
         T *flag,
         const std::string &full_name,
         const std::string &short_name,
-        const std::string &desc,
-        const std::optional<std::string> &default_val = std::nullopt)
+        const std::string &desc)
     {
         return std::make_shared<ConcreteFlag<T>>(
-            flag, full_name, short_name, desc, default_val);
+            flag, full_name, short_name, desc);
     }
-    bool match(const std::string &key) override
+    bool match(const std::string &key) const override
     {
         // never match an empty string.
         if (key.empty())
@@ -66,14 +63,6 @@ public:
         return apply_to(flag_, value);
     }
     static bool apply_to(T *target, const std::string &value);
-    bool apply_default() override
-    {
-        if (default_.has_value())
-        {
-            return apply_to(flag_, default_.value());
-        }
-        return false;
-    }
     std::string short_name() const override
     {
         return short_name_;
@@ -93,7 +82,27 @@ private:
     std::string full_name_;
     std::string short_name_;
     std::string desc_;
-    std::optional<std::string> default_;
+};
+
+class AllocatedFlag : public ConcreteFlag<std::string>
+{
+public:
+    AllocatedFlag(const std::string &full_name,
+                  const std::string &short_name,
+                  const std::string &desc)
+        : ConcreteFlag(&inner, full_name, short_name, desc)
+    {
+    }
+    static std::shared_ptr<AllocatedFlag> make_flag(
+        const std::string &full_name,
+        const std::string &short_name,
+        const std::string &desc)
+    {
+        return std::make_shared<AllocatedFlag>(full_name, short_name, desc);
+    }
+
+private:
+    std::string inner;
 };
 
 template <typename T>

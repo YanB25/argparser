@@ -5,6 +5,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "./common.hpp"
@@ -16,6 +17,10 @@ namespace flag
 {
 class FlagManager
 {
+    using Required = bool;
+    using Applied = bool;
+    using Meta = std::pair<Required, Applied>;
+
 public:
     using Pointer = std::shared_ptr<FlagManager>;
     static Pointer new_instance()
@@ -30,11 +35,14 @@ public:
                   const std::optional<std::string> &default_val,
                   bool required)
     {
-        flags_.emplace_back(flag::ConcreteFlag<T>::make_flag(
-            slot, full_name, short_name, desc, default_val));
+        auto pair = Meta(required, false);
+        flags_.emplace_back(
+            flag::ConcreteFlag<T>::make_flag(slot, full_name, short_name, desc),
+            std::move(pair));
         if (default_val.has_value())
         {
-            if (!flags_.back()->apply_default())
+            auto &flag = flags_.back().first;
+            if (!flag->apply(default_val.value()))
             {
                 std::cerr << "Failed to register flag " << full_name << ": "
                           << "default value \"" << default_val.value()
@@ -44,37 +52,50 @@ public:
                 return false;
             }
         }
-        required_.emplace_back(required);
-        applied_.emplace_back(false);
 
         max_full_name_len_ = std::max(max_full_name_len_, full_name.size());
         max_short_name_len_ = std::max(max_short_name_len_, short_name.size());
-        /**
-         * We allow a flag which does not has a full_name OR a short_name.
-         * In this case, do not insert "" into the map
-         */
-        if (!full_name.empty())
+        return true;
+    }
+    bool add_flag(const std::string &full_name,
+                  const std::string &short_name,
+                  const std::string &desc,
+                  const std::optional<std::string> &default_val,
+                  bool required)
+    {
+        auto meta = Meta(required, false);
+        allocated_flags_.emplace_back(
+            flag::AllocatedFlag(full_name, short_name, desc), std::move(meta));
+        if (default_val.has_value())
         {
-            registered_full_flags_.insert(full_name);
+            auto &allocated_flag = allocated_flags_.back().first;
+            if (!allocated_flag.apply(default_val.value()))
+            {
+                std::cerr << "Failed to register flag " << full_name << ": "
+                          << "default value \"" << default_val.value()
+                          << "\" not parsable" << std::endl;
+                // pop the error one
+                allocated_flags_.pop_back();
+                return false;
+            }
         }
-        if (!short_name.empty())
-        {
-            registered_short_flags_.insert(short_name);
-        }
+
+        max_full_name_len_ = std::max(max_full_name_len_, full_name.size());
+        max_short_name_len_ = std::max(max_short_name_len_, short_name.size());
         return true;
     }
     bool empty() const
     {
-        return flags_.empty();
+        return flags_.empty() && allocated_flags_.empty();
     }
     bool apply(const std::string &key, const std::string &value)
     {
-        for (size_t i = 0; i < flags_.size(); ++i)
+        for (auto &[flag, meta] : flags_)
         {
-            const auto &flag = flags_[i];
+            bool &applied = meta.second;
             if (flag->match(key))
             {
-                if (applied_[i])
+                if (applied)
                 {
                     std::cerr << "Failed to apply " << key << "=\"" << value
                               << "\": "
@@ -90,7 +111,32 @@ public:
                               << std::endl;
                     return false;
                 }
-                applied_[i] = true;
+                applied = true;
+                return true;
+            }
+        }
+        for (auto &[flag, meta] : allocated_flags_)
+        {
+            bool &applied = meta.second;
+            if (flag.match(key))
+            {
+                if (applied)
+                {
+                    std::cerr << "Failed to apply " << key << "=\"" << value
+                              << "\": "
+                              << "Flag " << key
+                              << " already set and is provided more than once."
+                              << std::endl;
+                    return false;
+                }
+                if (!flag.apply(value))
+                {
+                    std::cerr << "Failed to apply " << key << "=\"" << value
+                              << "\": \"" << value << "\" not parsable"
+                              << std::endl;
+                    return false;
+                }
+                applied = true;
                 return true;
             }
         }
@@ -98,9 +144,16 @@ public:
     }
     bool contain(const std::string name) const
     {
-        for (const auto &flag : flags_)
+        for (const auto &flagline : flags_)
         {
-            if (flag->match(name))
+            if (flagline.first->match(name))
+            {
+                return true;
+            }
+        }
+        for (const auto &flagline : allocated_flags_)
+        {
+            if (flagline.first.match(name))
             {
                 return true;
             }
@@ -109,35 +162,41 @@ public:
     }
     size_t size() const
     {
-        return flags_.size();
-    }
-    const std::vector<std::shared_ptr<flag::Flag>> &flags() const
-    {
-        return flags_;
+        return flags_.size() + allocated_flags_.size();
     }
     using FlagId = std::tuple<std::string, std::string>;
     std::vector<FlagId> missing_keys() const
     {
         std::vector<FlagId> ret;
-        for (size_t i = 0; i < required_.size(); ++i)
+        for (const auto &[flag, meta] : flags_)
         {
-            if (required_[i] && !applied_[i])
+            const bool &required = meta.first;
+            const bool &applied = meta.second;
+            if (required && !applied)
             {
-                const auto &flag = flags_[i];
                 ret.emplace_back(flag->full_name(), flag->short_name());
+            }
+        }
+        for (const auto &[flag, meta] : allocated_flags_)
+        {
+            const bool &required = meta.first;
+            const bool &applied = meta.second;
+            if (required && !applied)
+            {
+                ret.emplace_back(flag.full_name(), flag.short_name());
             }
         }
         return ret;
     }
     // TODO: make it formator
-    void print_flags(const std::string& title = "Flags") const
+    void print_flags(const std::string &title = "Flags") const
     {
         if (empty())
         {
             return;
         }
         std::cout << title << ":" << std::endl;
-        for (const auto &flag : flags_)
+        for (const auto &[flag, meta] : flags_)
         {
             auto short_name = flag->short_name();
             auto full_name = flag->full_name();
@@ -170,6 +229,39 @@ public:
             std::cout << desc;
             std::cout << std::endl;
         }
+        for (const auto &[flag, meta] : allocated_flags_)
+        {
+            auto short_name = flag.short_name();
+            auto full_name = flag.full_name();
+            std::cout << "  ";
+            std::cout << std::string(max_short_name_len_ - short_name.size(),
+                                     ' ');
+            std::cout << short_name << (short_name.empty() ? "  " : ", ");
+            std::cout << full_name;
+            std::cout << std::endl;
+            size_t padding_len =
+                2 + max_short_name_len_ + 2 + max_full_name_len_ + 2;
+            auto padding_str = std::string(padding_len, ' ');
+            std::cout << padding_str;
+            auto desc = flag.desc();
+            size_t pos = 0;
+            std::string token;
+            size_t current_column = 0;
+            while ((pos = desc.find(" ")) != std::string::npos)
+            {
+                token = desc.substr(0, pos);
+                current_column += token.size();
+                if (current_column >= 80)
+                {
+                    current_column = 0;
+                    std::cout << std::endl << padding_str;
+                }
+                std::cout << token << " ";
+                desc.erase(0, pos + 1);
+            }
+            std::cout << desc;
+            std::cout << std::endl;
+        }
         std::cout << std::endl;
     }
 
@@ -178,20 +270,11 @@ public:
     ~FlagManager() = default;
 
 private:
-    bool unique_full_flag(const std::string &name) const
-    {
-        return registered_full_flags_.find(name) ==
-               registered_full_flags_.end();
-    }
-    bool unique_short_flag(const std::string &name) const
-    {
-        return registered_short_flags_.find(name) ==
-               registered_short_flags_.end();
-    }
-
-    std::set<std::string> registered_full_flags_;
-    std::set<std::string> registered_short_flags_;
-    std::vector<std::shared_ptr<flag::Flag>> flags_;
+    // FlagLine = {pointer, {bool, bool}}
+    using FlagLine = std::pair<flag::Flag::Pointer, Meta>;
+    using AllocatedFlagLine = std::pair<flag::AllocatedFlag, Meta>;
+    std::vector<FlagLine> flags_;
+    std::vector<AllocatedFlagLine> allocated_flags_;
 
     std::vector<bool> required_;
     std::vector<bool> applied_;
