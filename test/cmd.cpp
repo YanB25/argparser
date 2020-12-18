@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "argparser/all.hpp"
+#include "argparser/argparser.hpp"
 #include "gtest/gtest.h"
 
 TEST(ArgparserCommand, ShouldParseCommandFlag)

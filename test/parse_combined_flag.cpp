@@ -1,6 +1,6 @@
 #include <inttypes.h>
 
-#include "argparser/all.hpp"
+#include "argparser/argparser.hpp"
 #include "gtest/gtest.h"
 
 TEST(FactorialTest, HandlesZeroInput)

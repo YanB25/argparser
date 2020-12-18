@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "argparser/all.hpp"
+#include "argparser/argparser.hpp"
 
 class Bar
 {

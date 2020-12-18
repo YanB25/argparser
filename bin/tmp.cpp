@@ -1,4 +1,4 @@
-#include "argparser/all.hpp"
+#include "argparser/argparser.hpp"
 #include <iostream>
 #define EXPECT_TRUE(x) std::cout << #x << ", " << x << std::endl;
 #define EXPECT_EQ(a, b) std::cout << #a ", " #b << ", " << a << ", "  << b << std::endl;

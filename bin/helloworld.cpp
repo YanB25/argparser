@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 
-#include "argparser/all.hpp"
+#include "argparser/argparser.hpp"
 int main(int argc, const char *argv[])
 {
     auto &parser = argparser::init("A Hello-world Command-line Tool");
