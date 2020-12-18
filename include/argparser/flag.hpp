@@ -11,6 +11,8 @@ namespace argparser
 {
 namespace flag
 {
+
+class FlagStore;
 class Flag
 {
 public:
@@ -103,16 +105,6 @@ public:
         return std::make_shared<AllocatedFlag>(full_name, short_name, desc);
     }
 
-    const std::string &inner() const
-    {
-        return inner_;
-    }
-    bool apply(const std::string &value) override
-    {
-        inner_ = value;
-        return true;
-    }
-
     template <typename T>
     T to() const
     {
@@ -125,8 +117,19 @@ public:
         T tmp;
         return argparse::convert::apply_to<T>(&tmp, inner_);
     }
+    const std::string &inner() const
+    {
+        return inner_;
+    }
 
 private:
+    friend FlagStore;
+    bool apply(const std::string &value) override
+    {
+        inner_ = value;
+        return true;
+    }
+
     std::string inner_;
 };
 

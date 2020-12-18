@@ -18,19 +18,17 @@ namespace argparser
 {
 // TODO: unable to know the current command
 
+class Parser;
 class ParserStore
 {
 public:
     using Pointer = std::unique_ptr<ParserStore>;
     ParserStore() = default;
-    void link_flag_store(flag::FlagStore::Pointer p)
-    {
-        flag_store_ = p;
-    }
-    void link_global_flag_store(flag::FlagStore::Pointer p)
-    {
-        gf_store_ = p;
-    }
+    ~ParserStore() = default;
+    ParserStore(const ParserStore&) = delete;
+    ParserStore(ParserStore&&) = delete;
+    ParserStore& operator=(const ParserStore&) = delete;
+    ParserStore& operator=(ParserStore&&) = delete;
     const flag::AllocatedFlag &get(const std::string &name) const
     {
         if (flag_store_->has(name))
@@ -44,8 +42,16 @@ public:
         return flag_store_->has(name) || gf_store_->has(name);
     }
 
-
 private:
+    friend Parser;
+    void link_flag_store(flag::FlagStore::Pointer p)
+    {
+        flag_store_ = p;
+    }
+    void link_global_flag_store(flag::FlagStore::Pointer p)
+    {
+        gf_store_ = p;
+    }
     flag::FlagStore::Pointer flag_store_;
     flag::FlagStore::Pointer gf_store_;
 };
@@ -66,6 +72,11 @@ public:
         store_->link_global_flag_store(gf_store_);
         store_->link_flag_store(flag_store_);
     }
+    Parser(const Parser&) = delete;
+    Parser(Parser&&) = delete;
+    Parser& operator=(const Parser&) = delete;
+    Parser& operator=(Parser&&) = delete;
+
     void print_promt() const
     {
         if (!init_)
@@ -79,38 +90,6 @@ public:
         print_command();
         flag_store_->print_flags();
         gf_store_->print_flags("Global Flag");
-    }
-    void print_promt(FlagPairs &pairs) const
-    {
-        for (auto it = pairs.begin(); it != pairs.end(); ++it)
-        {
-            const auto &key = it->first;
-            if (flag::is_flag(key))
-            {
-                if (flag_store_->contain(key))
-                {
-                    // this flag is expected, we can keep going.
-                    continue;
-                }
-                else
-                {
-                    // this flag is not expected, stop here.
-                    break;
-                }
-            }
-            else
-            {
-                // this is a command
-                auto parser_it = sub_parsers_.find(key);
-                if (parser_it == sub_parsers_.end())
-                {
-                    break;
-                }
-                pairs.erase(pairs.begin(), ++it);
-                return parser_it->second->print_promt(pairs);
-            }
-        }
-        print_promt();
     }
     void print_promt(int argc, const char *argv[]) const
     {
@@ -286,6 +265,38 @@ private:
         {
             std::cout << std::endl;
         }
+    }
+    void print_promt(FlagPairs &pairs) const
+    {
+        for (auto it = pairs.begin(); it != pairs.end(); ++it)
+        {
+            const auto &key = it->first;
+            if (flag::is_flag(key))
+            {
+                if (flag_store_->contain(key))
+                {
+                    // this flag is expected, we can keep going.
+                    continue;
+                }
+                else
+                {
+                    // this flag is not expected, stop here.
+                    break;
+                }
+            }
+            else
+            {
+                // this is a command
+                auto parser_it = sub_parsers_.find(key);
+                if (parser_it == sub_parsers_.end())
+                {
+                    break;
+                }
+                pairs.erase(pairs.begin(), ++it);
+                return parser_it->second->print_promt(pairs);
+            }
+        }
+        print_promt();
     }
     const flag::FlagStore::Pointer flag_store() const
     {
