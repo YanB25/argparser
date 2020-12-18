@@ -2,7 +2,7 @@
 
 ArgParser is a lightweight command line parser written in C++. The goal of ArgParser is to provide the most convenient and easy-to-use library for building command-line programs.
 
-**ArgParser is a header-only library. The packed single-header file is available [argparser.hpp](release/argparser.hpp).**
+**ArgParser is a header-only library. The packed single-header file is available at [release](https://github.com/YanB25/argparser/releases) or  [argparser.hpp](release/argparser.hpp).**
 
 The library is suitable for you, if you
 
