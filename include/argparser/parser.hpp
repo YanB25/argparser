@@ -23,10 +23,10 @@ public:
     using Pointer = std::unique_ptr<ParserStore>;
     ParserStore() = default;
     ~ParserStore() = default;
-    ParserStore(const ParserStore&) = delete;
-    ParserStore(ParserStore&&) = delete;
-    ParserStore& operator=(const ParserStore&) = delete;
-    ParserStore& operator=(ParserStore&&) = delete;
+    ParserStore(const ParserStore &) = delete;
+    ParserStore(ParserStore &&) = delete;
+    ParserStore &operator=(const ParserStore &) = delete;
+    ParserStore &operator=(ParserStore &&) = delete;
     const flag::AllocatedFlag &get(const std::string &name) const
     {
         if (flag_store_->has(name))
@@ -70,10 +70,10 @@ public:
         store_->link_global_flag_store(gf_store_);
         store_->link_flag_store(flag_store_);
     }
-    Parser(const Parser&) = delete;
-    Parser(Parser&&) = delete;
-    Parser& operator=(const Parser&) = delete;
-    Parser& operator=(Parser&&) = delete;
+    Parser(const Parser &) = delete;
+    Parser(Parser &&) = delete;
+    Parser &operator=(const Parser &) = delete;
+    Parser &operator=(Parser &&) = delete;
 
     void print_promt() const
     {
@@ -226,10 +226,11 @@ public:
     {
         return command_path_;
     }
-    const ParserStore& store() const
+    const ParserStore &store() const
     {
         return *store_;
     }
+
 private:
     bool init_{false};
     std::string program_name;
@@ -308,7 +309,9 @@ private:
             for (const auto &[command, parser] : sub_parsers_)
             {
                 std::cout << "  " << command;
-                std::cout << std::string(max_command_len_ + 2, ' ');
+                size_t printed_length = 2 + command.length();
+                std::cout << std::string(
+                    max_command_len_ + 2 + 2 - printed_length, ' ');
                 std::cout << parser->desc() << std::endl;
             }
             std::cout << std::endl;
