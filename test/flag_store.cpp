@@ -619,6 +619,24 @@ TEST(ArgparserFlagStore, AllocatedFlagCanBeGlobalAndConflictNotAllowed2)
     EXPECT_EQ(barrs[2], true);
     EXPECT_EQ(barrs[3], false);
 }
+TEST(ArgparserFlagStore, StoreShouldRecognizeBothShortAndFullName)
+{
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(
+        "--time", "-t", "The time to run"));
+    const char *arg[] = {"./argtest", "--time", "10"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+
+    auto& store = parser->store();
+    ASSERT_TRUE(store.has("--time"));
+    ASSERT_TRUE(store.has("-t"));
+
+    auto time = store.get("--time").to<int>();
+    auto t = store.get("-t").to<int>();
+
+    EXPECT_EQ(time, 10);
+    EXPECT_EQ(t, 10);
+}
 
 int main(int argc, char **argv)
 {
