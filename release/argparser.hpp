@@ -505,10 +505,11 @@ public:
         }
         return false;
     }
-    const flag::AllocatedFlag& get(const std::string& name) const
+    const flag::AllocatedFlag &get(const std::string &name) const
     {
-        for (const auto&[flag, meta]: allocated_flags_)
+        for (const auto &[flag, meta] : allocated_flags_)
         {
+            std::ignore = meta;
             if (flag.match(name))
             {
                 return flag;
@@ -517,10 +518,11 @@ public:
         std::cerr << "Failed to get " << name << ": not found." << std::endl;
         std::terminate();
     }
-    bool has(const std::string& name) const
+    bool has(const std::string &name) const
     {
-        for (const auto&[flag, meta]: allocated_flags_)
+        for (const auto &[flag, meta] : allocated_flags_)
         {
+            std::ignore = meta;
             if (flag.match(name))
             {
                 return true;
@@ -566,6 +568,7 @@ public:
         std::cout << title << ":" << std::endl;
         for (const auto &[flag, meta] : flags_)
         {
+            std::ignore = meta;
             auto short_name = flag->short_name();
             auto full_name = flag->full_name();
             std::cout << "  ";
@@ -599,6 +602,7 @@ public:
         }
         for (const auto &[flag, meta] : allocated_flags_)
         {
+            std::ignore = meta;
             auto short_name = flag.short_name();
             auto full_name = flag.full_name();
             std::cout << "  ";
@@ -1189,10 +1193,6 @@ std::shared_ptr<Parser> new_parser(
 
 namespace argparser
 {
-std::string version()
-{
-    return "v0.1.1-alpha";
-}
 const char* one_sentence = "Hello, here is some text without a meaning.";
 const char* very_short_sentence =
     "Hello, here is some text without a meaning. This text should "
