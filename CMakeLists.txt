@@ -15,7 +15,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # dir to include
 set(HELLOWORLD_INCLUDE_DIRECTORIES include)
 
-add_compile_options("-Wall" "-W" "-Wextra" "-fPIC")
+add_compile_options("-Wall" "-W" "-Wextra" "-fPIC" "-Werror")
 
 add_subdirectory(gtest)
 
