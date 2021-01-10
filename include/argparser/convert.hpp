@@ -7,17 +7,15 @@ namespace argparse
 namespace convert
 {
 template <typename T>
-bool apply_to(T *target, const std::string& value);
+bool apply_to(T *target, const std::string &value);
 
 template <typename T>
-std::optional<T> try_to(const std::string& input)
+std::optional<T> try_to(const std::string &input)
 {
     T tmp;
     if (!apply_to<T>(&tmp, input))
     {
-        std::cerr << "Failed to convert \"" << input << "\" to type "
-                    << typeid(T).name() << std::endl;
-        std::terminate();
+        return {};
     }
     return tmp;
 }

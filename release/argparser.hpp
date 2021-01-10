@@ -36,8 +36,7 @@ inline static bool is_flag(const std::string &str)
 {
     return is_full_flag(str) || is_short_flag(str);
 }
-std::vector<std::string> split(std::string str,
-                               const std::string& delimiter)
+std::vector<std::string> split(std::string str, const std::string &delimiter)
 {
     std::vector<std::string> ret;
     size_t pos = 0;
@@ -53,7 +52,7 @@ std::vector<std::string> split(std::string str,
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec)
 {
     os << "[";
     for (size_t i = 0; i < vec.size(); ++i)
@@ -67,7 +66,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
     os << "]";
     return os;
 }
-std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& vec)
+std::ostream &operator<<(std::ostream &os, const std::vector<std::string> &vec)
 {
     os << "[";
     for (size_t i = 0; i < vec.size(); ++i)
@@ -87,15 +86,16 @@ std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& vec)
 #endif
 #ifndef DEBUG_H
 #define DEBUG_H
-#include <ostream>
 #include <list>
+#include <ostream>
 #include <string>
-std::ostream& operator<<(std::ostream& os, std::list<std::pair<std::string, std::string>> pairs)
+std::ostream &operator<<(std::ostream &os,
+                         std::list<std::pair<std::string, std::string>> pairs)
 {
     if (!pairs.empty())
     {
         os << "[";
-        for (const auto&[first, second]: pairs)
+        for (const auto &[first, second] : pairs)
         {
             os << "{" << first << ", " << second << "}, ";
         }
@@ -134,16 +134,16 @@ namespace argparse
 namespace convert
 {
 template <typename T>
-bool apply_to(T *target, const std::string& value);
+bool apply_to(T *target, const std::string &value);
 
 template <typename T>
-std::optional<T> try_to(const std::string& input)
+std::optional<T> try_to(const std::string &input)
 {
     T tmp;
     if (!apply_to<T>(&tmp, input))
     {
-        std::cerr << "Failed to convert \"" << input << "\" to type "
-                    << typeid(T).name() << std::endl;
+        std::cerr << __FILE__ << ":" << __LINE__ << " Failed to convert \""
+                  << input << "\" to type " << typeid(T).name() << std::endl;
         std::terminate();
     }
     return tmp;
@@ -320,8 +320,8 @@ public:
         {
             return maybe.value();
         }
-        std::cerr << "Failed to convert \"" << inner_ << "\" to type "
-                    << typeid(T).name() << std::endl;
+        std::cerr << __FILE__ << ":" << __LINE__ << " Failed to convert \""
+                  << inner_ << "\" to type " << typeid(T).name() << std::endl;
         std::terminate();
     }
     template <typename T>
@@ -1200,17 +1200,17 @@ std::shared_ptr<Parser> new_parser(
 
 namespace argparser
 {
-const char* one_sentence = "Hello, here is some text without a meaning.";
-const char* very_short_sentence =
+const char *one_sentence = "Hello, here is some text without a meaning.";
+const char *very_short_sentence =
     "Hello, here is some text without a meaning. This text should "
     "show what aprinted text will look like at this place.";
-const char* short_sentence =
+const char *short_sentence =
     "Hello, here is some text without a meaning. This text should "
     "show what aprinted text will look like at this place. If you read this "
     "text, you will get noinformation. Really? Is there no information? Is "
     "there a difference between thistext and some nonsense like “Huardest "
     "gefburn”? Kjift – not at all!";
-const char* long_sentence =
+const char *long_sentence =
     "Hello, here is some text without a meaning. This text should "
     "show what aprinted text will look like at this place. If you read this "
     "text, you will get noinformation. Really? Is there no information? Is "
@@ -1221,7 +1221,7 @@ const char* long_sentence =
     "alphabet and it should be written in of the original language. There is "
     "noneed for special content, but the length of words should match the "
     "language.";
-const char* very_long_sentence =
+const char *very_long_sentence =
     "Hello, here is some text without a meaning. This text should "
     "show what aprinted text will look like at this place. If you read this "
     "text, you will get noinformation. Really? Is there no information? Is "

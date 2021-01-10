@@ -22,4 +22,8 @@ add_executable(flag_store flag_store.cpp)
 target_link_libraries(flag_store gtest_main argparser_obj)
 add_test(NAME flag_store COMMAND flag_store)
 
+add_executable(parse_custom parse_custom.cpp)
+target_link_libraries(parse_custom gtest_main argparser_obj)
+add_test(NAME parse_custom COMMAND parse_custom)
+
 enable_testing()

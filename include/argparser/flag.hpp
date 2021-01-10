@@ -79,7 +79,13 @@ public:
     }
     bool apply(const std::string &value) override
     {
-        return argparse::convert::apply_to<T>(flag_, value);
+        std::optional<T> maybe = argparse::convert::try_to<T>(value);
+        if (maybe.has_value())
+        {
+            *flag_ = std::move(maybe.value());
+            return true;
+        }
+        return false;
     }
     ~ConcreteFlag() = default;
 
@@ -112,15 +118,15 @@ public:
         {
             return maybe.value();
         }
-        std::cerr << "Failed to convert \"" << inner_ << "\" to type "
-                    << typeid(T).name() << std::endl;
+        std::cerr << __FILE__ << ":" << __LINE__ << " Failed to convert \""
+                  << inner_ << "\" to type " << typeid(T).name() << std::endl;
         std::terminate();
     }
     template <typename T>
     bool convertable_to() const
     {
-        T tmp;
-        return argparse::convert::apply_to<T>(&tmp, inner_);
+        std::optional<T> maybe = argparse::convert::try_to<T>(inner_);
+        return maybe.has_value();
     }
     const std::string &inner() const
     {
