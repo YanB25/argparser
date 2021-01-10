@@ -257,6 +257,7 @@ public:
         }
         for (const auto &[flag, meta] : allocated_flags_)
         {
+            std::ignore = meta;
             auto short_name = flag.short_name();
             auto full_name = flag.full_name();
             std::cout << "  ";
