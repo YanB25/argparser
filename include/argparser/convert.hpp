@@ -1,6 +1,7 @@
 #ifndef CONVERT_H
 #define CONVERT_H
 #include <iostream>
+#include <optional>
 namespace argparse
 {
 namespace convert
@@ -9,7 +10,7 @@ template <typename T>
 bool apply_to(T *target, const std::string& value);
 
 template <typename T>
-T to(const std::string& input)
+std::optional<T> try_to(const std::string& input)
 {
     T tmp;
     if (!apply_to<T>(&tmp, input))

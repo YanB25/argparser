@@ -19,16 +19,17 @@ private:
 };
 
 template <>
-Bar argparse::convert::to<Bar>(const std::string &input)
+std::optional<Bar> argparse::convert::try_to<Bar>(const std::string &input)
 {
     if (input == "Y")
     {
         return Bar(1);
     }
-    else
+    else if (input == "N")
     {
         return Bar(2);
     }
+    return std::nullopt;
 }
 
 int main(int argc, const char *argv[])
