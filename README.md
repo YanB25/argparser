@@ -227,24 +227,66 @@ Provide a list in your command-line arguments, e.g.
 You can also use ArgParser to parse custom types if you provide your customed conversion from `std::string` to your type.
 
 ``` c++
+using std::optional;
 class Bar;
 // provide your conversion
 template <>
-Bar argparser::convert::to<Bar>(const std::string& input)
+optional<Bar> argparser::convert::try_to<Bar>(const std::string& input)
 {
-    // ...
-    return bar;
+    if (validate(input))
+    {
+        // Do the construction here
+        Bar bar = ...
+        return bar;
+    }
+    // return std::nullopt to indicate a failure
+    return {}; 
 }
 ```
 
 Then you can use your *Bar-type* flag as usual.
 
 ``` c++
-parser.flag(&bar, "--bar", "-b", "My special Bar type"); //okay
+parser.flag(&bar, "--bar", "-b", "My special Bar type"); // okay
 // or
 Bar bar = store.get("--stored-bar").to<Bar>(); // okay!
 
 ```
+
+
+The API relys on std::optional (C++ 17 or later) to indicate the success. Argparser will stop the first time conversion fails and report the errors.
+
+Custom type is especially useful for parsing an enum. For example, defining a conversion for
+
+``` c++
+enum class Color
+{
+    kRed,
+    kBlue,
+};
+```
+
+reduces to an easy string comparison.
+
+### Understand copy and move
+
+A registered flag is always *moved*: no copy occurs.
+
+``` c++
+// calling Bar(Bar&&) or operator=(Bar&&)
+// no copy occurs
+parser.flag(&bar, "--bar", "-b", "My special Bar type"); 
+```
+
+On the other hand, retrieving allocated flags from the store always requires a *copy*:
+
+``` c++
+// calling Bar(const Bar&) or operator=(const Bar&)
+// A copy happens here!
+Bar bar = store.get("--stored-bar").to<Bar>();
+```
+
+This is because the store *owns* the parsed object and will never handover the ownership to the user. `store.get(...)` API only offers a copy.
 
 ## Why me
 
