@@ -128,6 +128,7 @@ std::ostream& operator<<(std::ostream& os, std::list<std::pair<std::string, std:
 #ifndef CONVERT_H
 #define CONVERT_H
 #include <iostream>
+#include <optional>
 namespace argparse
 {
 namespace convert
@@ -136,7 +137,7 @@ template <typename T>
 bool apply_to(T *target, const std::string& value);
 
 template <typename T>
-T to(const std::string& input)
+std::optional<T> try_to(const std::string& input)
 {
     T tmp;
     if (!apply_to<T>(&tmp, input))
@@ -218,7 +219,6 @@ namespace argparser
 {
 namespace flag
 {
-
 class FlagStore;
 class Flag
 {
@@ -315,7 +315,14 @@ public:
     template <typename T>
     T to() const
     {
-        return argparse::convert::to<T>(inner_);
+        std::optional<T> maybe = argparse::convert::try_to<T>(inner_);
+        if (maybe.has_value())
+        {
+            return maybe.value();
+        }
+        std::cerr << "Failed to convert \"" << inner_ << "\" to type "
+                    << typeid(T).name() << std::endl;
+        std::terminate();
     }
     template <typename T>
     bool convertable_to() const

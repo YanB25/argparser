@@ -22,8 +22,4 @@ add_executable(flag_store flag_store.cpp)
 target_link_libraries(flag_store gtest_main argparser_obj)
 add_test(NAME flag_store COMMAND flag_store)
 
-add_executable(release-ok release-ok.cpp)
-target_link_libraries(release-ok gtest_main argparser_obj)
-add_test(NAME release-ok COMMAND release-ok)
-
 enable_testing()
