@@ -253,7 +253,7 @@ public:
                 desc.erase(0, pos + 1);
             }
             std::cout << desc;
-            std::cout << std::endl;
+            std::cout << std::endl << std::endl;
         }
         for (const auto &[flag, meta] : allocated_flags_)
         {

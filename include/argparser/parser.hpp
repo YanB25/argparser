@@ -312,7 +312,26 @@ private:
                 size_t printed_length = 2 + command.length();
                 std::cout << std::string(
                     max_command_len_ + 2 + 2 - printed_length, ' ');
-                std::cout << parser->desc() << std::endl;
+                auto desc = parser->desc();
+
+                size_t pos = 0;
+                std::string token;
+                size_t current_column = 0;
+                while ((pos = desc.find(" ")) != std::string::npos)
+                {
+                    token = desc.substr(0, pos);
+                    current_column += token.size();
+                    if (current_column >= 60)
+                    {
+                        current_column = 0;
+                        std::cout << std::endl
+                                  << std::string(max_command_len_ + 2 + 2, ' ');
+                    }
+                    std::cout << token << " ";
+                    desc.erase(0, pos + 1);
+                }
+                std::cout << desc << std::endl;
+                // std::cout << parser->desc() << std::endl;
             }
             std::cout << std::endl;
         }

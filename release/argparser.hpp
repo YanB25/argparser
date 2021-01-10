@@ -36,7 +36,8 @@ inline static bool is_flag(const std::string &str)
 {
     return is_full_flag(str) || is_short_flag(str);
 }
-std::vector<std::string> split(std::string str, const std::string &delimiter)
+std::vector<std::string> split(std::string str,
+                               const std::string& delimiter)
 {
     std::vector<std::string> ret;
     size_t pos = 0;
@@ -52,7 +53,7 @@ std::vector<std::string> split(std::string str, const std::string &delimiter)
 }
 
 template <typename T>
-std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec)
+std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
 {
     os << "[";
     for (size_t i = 0; i < vec.size(); ++i)
@@ -66,7 +67,7 @@ std::ostream &operator<<(std::ostream &os, const std::vector<T> &vec)
     os << "]";
     return os;
 }
-std::ostream &operator<<(std::ostream &os, const std::vector<std::string> &vec)
+std::ostream& operator<<(std::ostream& os, const std::vector<std::string>& vec)
 {
     os << "[";
     for (size_t i = 0; i < vec.size(); ++i)
@@ -86,16 +87,15 @@ std::ostream &operator<<(std::ostream &os, const std::vector<std::string> &vec)
 #endif
 #ifndef DEBUG_H
 #define DEBUG_H
-#include <list>
 #include <ostream>
+#include <list>
 #include <string>
-std::ostream &operator<<(std::ostream &os,
-                         std::list<std::pair<std::string, std::string>> pairs)
+std::ostream& operator<<(std::ostream& os, std::list<std::pair<std::string, std::string>> pairs)
 {
     if (!pairs.empty())
     {
         os << "[";
-        for (const auto &[first, second] : pairs)
+        for (const auto&[first, second]: pairs)
         {
             os << "{" << first << ", " << second << "}, ";
         }
@@ -142,9 +142,7 @@ std::optional<T> try_to(const std::string &input)
     T tmp;
     if (!apply_to<T>(&tmp, input))
     {
-        std::cerr << __FILE__ << ":" << __LINE__ << " Failed to convert \""
-                  << input << "\" to type " << typeid(T).name() << std::endl;
-        std::terminate();
+        return {};
     }
     return tmp;
 }
@@ -287,7 +285,13 @@ public:
     }
     bool apply(const std::string &value) override
     {
-        return argparse::convert::apply_to<T>(flag_, value);
+        std::optional<T> maybe = argparse::convert::try_to<T>(value);
+        if (maybe.has_value())
+        {
+            *flag_ = std::move(maybe.value());
+            return true;
+        }
+        return false;
     }
     ~ConcreteFlag() = default;
 
@@ -327,8 +331,8 @@ public:
     template <typename T>
     bool convertable_to() const
     {
-        T tmp;
-        return argparse::convert::apply_to<T>(&tmp, inner_);
+        std::optional<T> maybe = argparse::convert::try_to<T>(inner_);
+        return maybe.has_value();
     }
     const std::string &inner() const
     {
@@ -605,7 +609,7 @@ public:
                 desc.erase(0, pos + 1);
             }
             std::cout << desc;
-            std::cout << std::endl;
+            std::cout << std::endl << std::endl;
         }
         for (const auto &[flag, meta] : allocated_flags_)
         {
@@ -1048,7 +1052,26 @@ private:
                 size_t printed_length = 2 + command.length();
                 std::cout << std::string(
                     max_command_len_ + 2 + 2 - printed_length, ' ');
-                std::cout << parser->desc() << std::endl;
+                auto desc = parser->desc();
+
+                size_t pos = 0;
+                std::string token;
+                size_t current_column = 0;
+                while ((pos = desc.find(" ")) != std::string::npos)
+                {
+                    token = desc.substr(0, pos);
+                    current_column += token.size();
+                    if (current_column >= 60)
+                    {
+                        current_column = 0;
+                        std::cout << std::endl
+                                  << std::string(max_command_len_ + 2 + 2, ' ');
+                    }
+                    std::cout << token << " ";
+                    desc.erase(0, pos + 1);
+                }
+                std::cout << desc << std::endl;
+                // std::cout << parser->desc() << std::endl;
             }
             std::cout << std::endl;
         }
@@ -1200,17 +1223,17 @@ std::shared_ptr<Parser> new_parser(
 
 namespace argparser
 {
-const char *one_sentence = "Hello, here is some text without a meaning.";
-const char *very_short_sentence =
+const char* one_sentence = "Hello, here is some text without a meaning.";
+const char* very_short_sentence =
     "Hello, here is some text without a meaning. This text should "
     "show what aprinted text will look like at this place.";
-const char *short_sentence =
+const char* short_sentence =
     "Hello, here is some text without a meaning. This text should "
     "show what aprinted text will look like at this place. If you read this "
     "text, you will get noinformation. Really? Is there no information? Is "
     "there a difference between thistext and some nonsense like “Huardest "
     "gefburn”? Kjift – not at all!";
-const char *long_sentence =
+const char* long_sentence =
     "Hello, here is some text without a meaning. This text should "
     "show what aprinted text will look like at this place. If you read this "
     "text, you will get noinformation. Really? Is there no information? Is "
@@ -1221,7 +1244,7 @@ const char *long_sentence =
     "alphabet and it should be written in of the original language. There is "
     "noneed for special content, but the length of words should match the "
     "language.";
-const char *very_long_sentence =
+const char* very_long_sentence =
     "Hello, here is some text without a meaning. This text should "
     "show what aprinted text will look like at this place. If you read this "
     "text, you will get noinformation. Really? Is there no information? Is "

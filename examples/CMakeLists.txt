@@ -15,3 +15,6 @@ target_link_libraries(custom PRIVATE argparser_obj)
 
 add_executable(format format.cpp)
 target_link_libraries(format PRIVATE argparser_obj)
+
+add_executable(commands commands.cpp)
+target_link_libraries(commands PRIVATE argparser_obj)
