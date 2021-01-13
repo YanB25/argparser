@@ -210,6 +210,102 @@ TEST(ArgparserFlag, ParseArray)
     }
 }
 
+TEST(ArgparserFlag, ParseDefaultEmptyArray)
+{
+    std::vector<int64_t> arrs;
+    arrs.push_back(1); // make it not empty
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", "The array", ""));
+    const char *arg[] = {"./argtest"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(arrs.size(), 0);
+}
+
+TEST(ArgparserFlag, ParseArrayShouldHaveArg)
+{
+    std::vector<int64_t> arrs;
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", "The array"));
+    const char *arg[] = {"./argtest"};
+    EXPECT_FALSE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+}
+
+TEST(ArgparserFlag, ParseEmptyArray)
+{
+    std::vector<int64_t> arrs;
+    arrs.push_back(1); // make it not empty
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", "The array"));
+    const char *arg[] = {"./argtest", "--array"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(arrs.size(), 0);
+}
+
+TEST(ArgparserFlag, ParseEmptyArray2)
+{
+    std::vector<int64_t> arrs;
+    arrs.push_back(1); // make it not empty
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", "The array"));
+    const char *arg[] = {"./argtest", "--array="};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(arrs.size(), 0);
+}
+
+TEST(ArgparserFlag, ParseEmptyArray3)
+{
+    std::vector<int64_t> arrs;
+    arrs.push_back(1); // make it not empty
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", "The array"));
+    const char *arg[] = {"./argtest", "--array", ""};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(arrs.size(), 0);
+}
+
+TEST(ArgparserFlag, ParseEmptyArray4)
+{
+    std::vector<int64_t> arrs;
+    bool b;
+    arrs.push_back(1); // make it not empty
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", "The array"));
+    EXPECT_TRUE(parser->flag(&b, "--bool", "-b", "The bool"));
+    const char *arg[] = {"./argtest", "--array", "-b", "true"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(arrs.size(), 0);
+    EXPECT_EQ(b, true);
+}
+
+TEST(ArgparserFlag, ParseEmptyArray5)
+{
+    std::vector<int64_t> arrs;
+    bool b;
+    arrs.push_back(1); // make it not empty
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", "The array"));
+    EXPECT_TRUE(parser->flag(&b, "--bool", "-b", "The bool"));
+    const char *arg[] = {"./argtest", "-b", "true", "--array"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(arrs.size(), 0);
+    EXPECT_EQ(b, true);
+}
+
+TEST(ArgparserFlag, ParseEmptyArray6)
+{
+    std::vector<int64_t> arrs;
+    bool b;
+    arrs.push_back(1); // make it not empty
+    auto parser = argparser::new_parser();
+    EXPECT_TRUE(parser->flag(&arrs, "--array", "-a", "The array"));
+    EXPECT_TRUE(parser->flag(&b, "--bool", "-b", "The bool"));
+    const char *arg[] = {"./argtest", "--array=", "-b", "true"};
+    EXPECT_TRUE(parser->parse(sizeof(arg) / sizeof(arg[0]), arg));
+    EXPECT_EQ(arrs.size(), 0);
+    EXPECT_EQ(b, true);
+}
+
+
 TEST(ArgparserFlag, ParseStringArray)
 {
     std::vector<std::string> arrs;

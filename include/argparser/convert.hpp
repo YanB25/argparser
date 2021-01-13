@@ -25,6 +25,12 @@ std::istream &operator>>(std::istream &is, std::vector<T> &vec)
 {
     std::string token;
     vec.clear();
+    if (is.peek() == EOF)
+    {
+        // parse empty string "" to an array
+        // success and the result is an empty array
+        return is;
+    }
     while (!is.eof())
     {
         std::getline(is, token, ',');
