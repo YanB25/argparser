@@ -1105,10 +1105,10 @@ private:
                     return false;
                 }
                 auto sub_parser = parser_it->second.get();
+                command_path.push_back(key);
                 // remove [begin, pair_it] and pass the remaining to the
                 // sub_parser
                 pairs.erase(pairs.begin(), ++pair_it);
-                command_path.push_back(key);
                 return sub_parser->do_parse(pairs, store, command_path);
             }
 
