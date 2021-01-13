@@ -29,4 +29,8 @@ script:
   - make test
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -v ./examples/arg ;
+      valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -v ./examples/arg -i 18;
+      valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -v ./examples/commands ;
+      valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -v ./examples/commands add ;
+      valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes -v ./examples/commands add -t 10 ;
     fi
