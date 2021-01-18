@@ -1,0 +1,1 @@
+1. let argparser accept enum of basic type, for example parser.flag(ybench::type::BOOL, "--has_order", "", "", "");
